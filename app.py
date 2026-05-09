@@ -6,6 +6,7 @@ from config import Config
 import spacy
 import re
 import json as _json
+import os
 
 # ─────────────────────────────────────────────────────────────
 # NLP SETUP
@@ -142,6 +143,11 @@ from PyPDF2 import PdfReader
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'localhost')
+app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', '')
+app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB', 'railway')
+app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', 3306))
 mysql = MySQL(app)
 
 # In-process cache: role_key → {"technical": [...], "soft": [...]}
