@@ -142,7 +142,6 @@ from PyPDF2 import PdfReader
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', 3306))
 mysql = MySQL(app)
 
 # In-process cache: role_key → {"technical": [...], "soft": [...]}
