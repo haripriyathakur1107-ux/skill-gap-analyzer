@@ -144,14 +144,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.config.from_object(Config)
 import os
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'secret')
 print("FLASK CONFIG:", app.config.get('MYSQL_HOST'), app.config.get('MYSQL_PORT'), app.config.get('MYSQL_DB'))
-app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST')
-app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER')
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD')
-app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE')
-app.config['MYSQL_PORT'] = int(os.environ.get('MYSQLPORT',3306))
+app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST', 'localhost')
+app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD', '')
+app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE', 'railway')
+
+mysql_port = os.environ.get('MYSQLPORT')
+
+if mysql_port:
+    app.config['MYSQL_PORT'] = int(mysql_port)
+else:
+    app.config['MYSQL_PORT'] = 3306
 mysql = MySQL(app)
 
 # In-process cache: role_key → {"technical": [...], "soft": [...]}
