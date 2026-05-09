@@ -144,7 +144,7 @@ from PyPDF2 import PdfReader
 app = Flask(__name__)
 app.config.from_object(Config)
 import os
-print("ENV VARS:", os.environ.get('MYSQL_HOST'), os.environ.get('MYSQL_PORT'), os.environ.get('MYSQL_DB'))
+print("FLASK CONFIG:", app.config.get('MYSQL_HOST'), app.config.get('MYSQL_PORT'), app.config.get('MYSQL_DB'))
 app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'localhost')
 app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
 app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', '')
