@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard – Skill Gap Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        body { margin:0; padding:0; font-family:'Plus Jakarta Sans','Segoe UI',sans-serif; background:#1a1040; min-height:100vh; }
+
+        /* ── NAVBAR ── */
+        .navbar { display:flex; justify-content:space-between; align-items:center; padding:14px 50px; background:rgba(26,16,64,0.85); backdrop-filter:blur(10px); position:sticky; top:0; z-index:800; border-bottom:1px solid rgba(175,169,236,0.15); }
+        .navbar-brand { color:#d8c8ff; font-size:18px; font-weight:700; text-decoration:none; }
+        .navbar-links { display:flex; gap:4px; align-items:center; }
+        .navbar-links a { color:rgba(200,170,255,0.75); text-decoration:none; font-weight:500; font-size:14px; padding:7px 14px; border-radius:8px; transition:0.2s; }
+        .navbar-links a:hover { background:rgba(175,169,236,0.15); color:#d8c8ff; }
+        .navbar-links a.active { background:rgba(175,169,236,0.2); color:#c8a0ff; font-weight:700; }
+        .navbar-links .nav-logout { color:rgba(255,180,180,0.75); }
+        .navbar-links .nav-logout:hover { background:rgba(255,100,100,0.15); color:#ff8a80; }
+
+        /* ── HERO ── */
+        .hero { text-align:center; color:white; padding:60px 20px 10px; }
+        .hero h1 { font-size:40px; margin-bottom:10px; color:#f0e8ff; }
+        .hero p { font-size:16px; opacity:0.85; margin-bottom:8px; color:#ddd0ff; }
+        .hero-sub { font-size:13px; opacity:0.65; margin-bottom:0; color:#c8b8ff; }
+
+        /* ── STATS BAR ── */
+        .stats-bar { display:flex; justify-content:center; gap:40px; padding:30px 20px; flex-wrap:wrap; }
+        .stat { text-align:center; }
+        .stat-num { font-size:36px; font-weight:700; color:#c8a0ff; }
+        .stat-label { font-size:13px; color:rgba(200,170,255,0.6); margin-top:3px; }
+
+        /* ── CARDS — Style F with purple tint ── */
+        .card-container { display:flex; justify-content:center; align-items:flex-start; gap:24px; padding:0 40px 60px; flex-wrap:wrap; }
+        .card { background:#EEEDFE; width:280px; padding:28px 24px 24px; border-radius:20px; text-align:center; border:1px solid #AFA9EC; flex-shrink:0; transition:background 0.2s, border-color 0.2s, transform 0.2s; }
+        .card:hover { background:#CECBF6; border-color:#7F77DD; transform:translateY(-6px); }
+        .card h3 { color:#26215C; margin-bottom:10px; font-size:17px; font-weight:600; }
+        .card p { color:#534AB7; font-size:14px; line-height:1.6; margin:0 0 16px; }
+        .card-link { text-decoration:none; }
+        .tag { font-size:11px; font-weight:600; background:#AFA9EC; color:#26215C; padding:4px 12px; border-radius:20px; margin-bottom:12px; display:inline-block; letter-spacing:0.3px; }
+        .icon { font-size:46px; margin:12px 0 14px; display:block; line-height:1; }
+
+        /* pill CTA inside card */
+        .card-cta { display:inline-block; font-size:12px; font-weight:600; color:#3C3489; background:#fff; border:1px solid #AFA9EC; border-radius:20px; padding:5px 16px; transition:background 0.15s; }
+        .card:hover .card-cta { background:#EEEDFE; }
+
+        /* ── WELCOME BACK ── */
+        .welcome-back-badge { display:inline-block; background:rgba(175,169,236,0.2); border:1px solid rgba(175,169,236,0.35); color:#c8a0ff; font-size:13px; font-weight:700; padding:6px 16px; border-radius:20px; margin-bottom:14px; letter-spacing:0.5px; }
+
+        /* ── PROGRESS SUMMARY BAR ── */
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" href="/dashboard">🎯 Skill Gap Analyzer</a>
+    <div class="navbar-links">
+        <a href="/dashboard" class="active">🏠 Home</a>
+        <a href="/skill_gap">🔍 Analyze</a>
+        <a href="/job_explorer">💼 Jobs</a>
+        <a href="/my_progress">📈 Progress</a>
+        <a href="/logout" class="nav-logout">⏻ Logout</a>
+    </div>
+</nav>
+
+<div class="hero">
+    {% if is_returning %}
+    <div class="welcome-back-badge">🎉 Welcome Back!</div>
+    <h1>Hi {{ session.get('full_name', 'there').split()[0] }}, good to see you again!</h1>
+    <p>Keep going — you've already completed <strong>{{ total_completed }}</strong> skill{{ 's' if total_completed != 1 else '' }}!</p>
+    {% else %}
+    <h1>👋 Welcome, {{ session.get('full_name', 'there') }}!</h1>
+    <p>Analyze Your Skills. Bridge the Gap.</p>
+    {% endif %}
+    <p class="hero-sub">Identify missing skills, get learning paths &amp; track your growth</p>
+</div>
+
+
+<div class="stats-bar">
+    <div class="stat"><div class="stat-num">25+</div><div class="stat-label">Job Roles</div></div>
+    <div class="stat"><div class="stat-num">200+</div><div class="stat-label">Skills Tracked</div></div>
+    <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Learning Resources</div></div>
+    <div class="stat"><div class="stat-num">🧠</div><div class="stat-label">AI-Powered</div></div>
+</div>
+
+<div class="card-container">
+    <a href="/skill_gap" class="card-link">
+        <div class="card">
+            <span class="tag">⚡ Start Here</span>
+            <div class="icon">🎯</div>
+            <h3>Analyze Skill Gap</h3>
+            <p>Enter your skills or upload your resume to instantly find what you're missing for your target role.</p>
+        </div>
+    </a>
+
+    <a href="/job_explorer" class="card-link">
+        <div class="card">
+            <span class="tag">💼 25+ Roles</span>
+            <div class="icon">🗺️</div>
+            <h3>Job Explorer</h3>
+            <p>Browse all job roles and see the full list of technical &amp; soft skills required for each.</p>
+        </div>
+    </a>
+
+    <a href="/my_progress" class="card-link">
+        <div class="card">
+            <span class="tag">📈 Track Growth</span>
+            <div class="icon">🏆</div>
+            <h3>My Progress</h3>
+            <p>View your saved learning progress and see how ready you are for each job role.</p>
+        </div>
+    </a>
+</div>
+
+</body>
+</html>

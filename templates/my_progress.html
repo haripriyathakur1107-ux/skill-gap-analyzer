@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Progress</title>
+    <style>
+        body {font-family:'Plus Jakarta Sans','Segoe UI',sans-serif; background:#1a1040; color:white; min-height:100vh; padding-bottom:60px;}
+        .navbar {display:flex; justify-content:space-between; align-items:center; padding:14px 40px; background:rgba(26,16,64,0.85); backdrop-filter:blur(12px); position:sticky; top:0; z-index:800; border-bottom:1px solid rgba(175,169,236,0.15);}
+        .navbar-brand {color:#d8c8ff; font-size:18px; font-weight:700; text-decoration:none; margin:0;}
+        .navbar-links {display:flex; gap:6px; align-items:center;}
+        .navbar-links a {color:rgba(200,170,255,0.75); text-decoration:none; font-size:14px; font-weight:500; padding:7px 14px; border-radius:8px; transition:0.2s;}
+        .navbar-links a:hover {background:rgba(175,169,236,0.15); color:#d8c8ff;}
+        .navbar-links a.active {background:rgba(175,169,236,0.2); color:#c8a0ff; font-weight:700;}
+        .navbar-links .nav-logout {color:rgba(255,180,180,0.75);}
+        .navbar-links .nav-logout:hover {background:rgba(255,100,100,0.15); color:#ff8a80;}
+        .hero {text-align:center; padding:40px 20px 20px;}
+        .hero h1 {font-size:34px; margin-bottom:8px; color:#f0e8ff;}
+        .hero p {opacity:0.75; margin:0; color:#c8b8ff;}
+        .content {max-width:750px; margin:0 auto; padding:0 20px;}
+        .empty-state {text-align:center; padding:80px 20px; opacity:0.8;}
+        .empty-state .big-icon {font-size:70px; margin-bottom:20px;}
+        .empty-state h2 {font-size:24px; margin-bottom:10px;}
+        .empty-state a {display:inline-block; margin-top:20px; background:#534AB7; color:white; padding:12px 28px; border-radius:30px; text-decoration:none; font-weight:700;}
+        .progress-card {background:white; color:#333; border-radius:18px; padding:24px; margin-bottom:20px; box-shadow:0 8px 25px rgba(0,0,0,0.2);}
+        .prog-job-title {font-size:18px; font-weight:700; color:#3C3489; margin-bottom:14px;}
+        .prog-bar-bg {background:#CECBF6; border-radius:10px; height:18px; overflow:hidden; margin-bottom:10px;}
+        .prog-bar-fill {height:100%; border-radius:10px; background:linear-gradient(90deg,#534AB7,#AFA9EC); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; color:white; font-weight:700;}
+        .prog-meta {display:flex; gap:15px; flex-wrap:wrap; margin-bottom:12px;}
+        .prog-stat {text-align:center; background:#EEEDFE; border-radius:10px; padding:8px 14px; flex:1; min-width:80px;}
+        .prog-stat-num {font-size:20px; font-weight:700; color:#534AB7;}
+        .prog-stat-label {font-size:11px; color:#888;}
+        .completed-pills {display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;}
+        .done-pill {background:#e8f5e9; color:#2e7d32; font-size:12px; padding:4px 12px; border-radius:20px; font-weight:500;}
+        .prog-actions {margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
+        .btn-analyze {background:#534AB7; color:white; padding:9px 20px; border-radius:20px; text-decoration:none; font-size:13px; font-weight:600;}
+        .btn-clear {background:#ffebee; color:#c62828; padding:9px 20px; border-radius:20px; border:none; font-size:13px; font-weight:600; cursor:pointer;}
+        .btn-clear:hover {background:#ffcdd2;}
+        .overall-card {background:rgba(238,237,254,0.12); border-radius:18px; padding:24px; margin-bottom:20px; text-align:center; border:1px solid rgba(175,169,236,0.2);}
+        .overall-card h3 {margin:0 0 16px; font-size:18px; color:#e8d8ff;}
+        .overall-stats {display:flex; gap:20px; justify-content:center; flex-wrap:wrap;}
+        .o-stat {background:rgba(238,237,254,0.15); border-radius:12px; padding:14px 24px; text-align:center; border:1px solid rgba(175,169,236,0.2);}
+        .o-stat-num {font-size:28px; font-weight:700; color:#c8a0ff;}
+        .o-stat-label {font-size:12px; opacity:0.75; color:#c8b8ff;}
+        .reset-bar {display:flex; justify-content:flex-end; margin-bottom:18px;}
+        .btn-reset-all {display:flex; align-items:center; gap:8px; background:rgba(198,40,40,0.15); border:2px solid rgba(255,100,100,0.4); color:white; padding:10px 22px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; transition:0.2s; letter-spacing:0.3px;}
+        .btn-reset-all:hover {background:rgba(198,40,40,0.35); border-color:#ff6b6b; transform:translateY(-1px);}
+        .modal-bg {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;}
+        .modal-bg.open {display:flex;}
+        .modal-box {background:white; border-radius:20px; padding:36px 32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+        .modal-icon {font-size:52px; margin-bottom:12px;}
+        .modal-box h3 {color:#c62828; font-size:20px; margin:0 0 10px;}
+        .modal-box p {color:#555; font-size:14px; line-height:1.6; margin:0 0 24px;}
+        .modal-btns {display:flex; gap:12px; justify-content:center;}
+        .btn-cancel {padding:11px 28px; border-radius:12px; background:#f5f5f5; color:#555; border:none; font-size:14px; font-weight:600; cursor:pointer;}
+        .btn-cancel:hover {background:#e0e0e0;}
+        .btn-confirm-reset {padding:11px 28px; border-radius:12px; background:#c62828; color:white; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+        .btn-confirm-reset:hover {box-shadow:0 4px 14px rgba(198,40,40,0.4);}
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a class="navbar-brand" href="/dashboard">🎯 Skill Gap Analyzer</a>
+    <div class="navbar-links">
+        <a href="/dashboard">🏠 Home</a>
+        <a href="/skill_gap">🔍 Analyze</a>
+        <a href="/job_explorer">💼 Jobs</a>
+        <a href="/my_progress" class="active">📈 Progress</a>
+        <a href="/logout" class="nav-logout">⏻ Logout</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1>📈 My Progress</h1>
+    <p>Track your learning journey across all job goals</p>
+</div>
+
+<div class="content">
+    {% if not progress_data %}
+    <div class="empty-state">
+        <div class="big-icon">🌱</div>
+        <h2>No progress saved yet</h2>
+        <p>Start a skill gap analysis, check off completed learnings, and save your progress to see it here.</p>
+        <a href="/skill_gap">🎯 Start Analyzing Now</a>
+    </div>
+    {% else %}
+
+    <div class="overall-card">
+        <h3>🏆 Overall Learning Summary</h3>
+        <div class="overall-stats">
+            <div class="o-stat">
+                <div class="o-stat-num">{{ progress_data|length }}</div>
+                <div class="o-stat-label">Jobs Tracked</div>
+            </div>
+            <div class="o-stat">
+                <div class="o-stat-num">{{ total_completed }}</div>
+                <div class="o-stat-label">Skills Completed</div>
+            </div>
+            <div class="o-stat">
+                <div class="o-stat-num">{{ best_job }}</div>
+                <div class="o-stat-label">Best Progress</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset All Button -->
+    <div class="reset-bar">
+        <button class="btn-reset-all" onclick="document.getElementById('resetModal').classList.add('open')">
+            🔄 Reset All Progress
+        </button>
+    </div>
+
+    {% for job, info in progress_data.items() %}
+    <div class="progress-card">
+        <div class="prog-job-title">💼 {{ job | title }}</div>
+        {% if info.last_updated and info.last_updated != '—' %}
+        <div style="font-size:11px; color:#aaa; margin-bottom:10px;">🕒 Last updated: {{ info.last_updated }}</div>
+        {% endif %}
+        <div class="prog-bar-bg">
+            <div class="prog-bar-fill" style="width:{{ info.percent }}%">
+                {% if info.percent > 10 %}{{ info.percent }}%{% endif %}
+            </div>
+        </div>
+        <div class="prog-meta">
+            <div class="prog-stat">
+                <div class="prog-stat-num" style="color:#388e3c;">{{ info.completed }}</div>
+                <div class="prog-stat-label">Completed</div>
+            </div>
+            <div class="prog-stat">
+                <div class="prog-stat-num" style="color:#c62828;">{{ info.remaining }}</div>
+                <div class="prog-stat-label">Remaining</div>
+            </div>
+            <div class="prog-stat">
+                <div class="prog-stat-num">{{ info.percent }}%</div>
+                <div class="prog-stat-label">Readiness</div>
+            </div>
+        </div>
+        {% if info.completed_list %}
+        <div style="font-size:12px; font-weight:600; color:#888; margin-bottom:6px;">✅ Completed Skills:</div>
+        <div class="completed-pills">
+            {% for skill in info.completed_list %}
+            <span class="done-pill">✓ {{ skill }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="prog-actions">
+            <a href="/skill_gap?job={{ job }}" class="btn-analyze">🎯 Continue Learning</a>
+            <form method="POST" action="/clear_progress" style="margin:0;">
+                <input type="hidden" name="job" value="{{ job }}">
+                <button type="submit" class="btn-clear" onclick="return confirm('Clear progress for {{ job | title }}?')">🗑 Clear This</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+</div>
+
+<!-- Reset All Confirmation Modal -->
+<div class="modal-bg" id="resetModal">
+    <div class="modal-box">
+        <div class="modal-icon">⚠️</div>
+        <h3>Reset All Progress?</h3>
+        <p>This will permanently delete all your saved progress across <strong>all job roles</strong>. This cannot be undone.</p>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="document.getElementById('resetModal').classList.remove('open')">Cancel</button>
+            <form method="POST" action="/reset_all_progress" style="margin:0;">
+                <button type="submit" class="btn-confirm-reset">🗑 Yes, Reset All</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

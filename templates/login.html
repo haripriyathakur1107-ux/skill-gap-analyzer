@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge — Sign In</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:          #1a1040;
+      --bg2:         #2d1065;
+      --indigo:      #534AB7;
+      --indigo-dark: #3C3489;
+      --indigo-lite: #7F77DD;
+      --violet:      #7F77DD;
+      --indigo-glow: rgba(83,74,183,0.18);
+      --white:       #ffffff;
+      --card-border: rgba(175,169,236,0.25);
+      --ink:         #26215C;
+      --ink-soft:    #3C3489;
+      --muted:       #6b7280;
+      --muted-lite:  #9ca3af;
+      --input-bg:    #f9fafb;
+      --input-border:#e5e7eb;
+      --success:     #059669;
+      --danger:      #dc2626;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── FONT IMPORT ── */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+
+    /* ── BACKGROUND BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      animation: blobFloat ease-in-out infinite;
+    }
+    .blob-1 {
+      width: 520px; height: 520px;
+      background: rgba(83,74,183,0.18);
+      top: -180px; left: -140px;
+      animation-duration: 14s; animation-delay: 0s;
+    }
+    .blob-2 {
+      width: 400px; height: 400px;
+      background: rgba(127,119,221,0.12);
+      bottom: -120px; right: -100px;
+      animation-duration: 18s; animation-delay: -6s;
+    }
+    .blob-3 {
+      width: 260px; height: 260px;
+      background: rgba(175,169,236,0.10);
+      top: 45%; left: 55%;
+      animation-duration: 22s; animation-delay: -10s;
+    }
+    @keyframes blobFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(18px, -22px) scale(1.04); }
+      66%       { transform: translate(-14px, 16px) scale(0.97); }
+    }
+
+    /* Subtle dot pattern */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(79,70,229,0.08) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+
+    /* ── CARD ── */
+    .card-wrap {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 448px;
+      animation: riseIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 24px;
+      border: 1px solid var(--card-border);
+      padding: 44px 40px 36px;
+      box-shadow:
+        0 1px 3px rgba(79,70,229,0.06),
+        0 8px 24px rgba(79,70,229,0.08),
+        0 32px 64px rgba(79,70,229,0.1);
+    }
+
+    /* top accent strip */
+    .card-strip {
+      height: 3px;
+      background: linear-gradient(90deg, var(--indigo), var(--violet), var(--indigo-lite));
+      border-radius: 24px 24px 0 0;
+      margin: -44px -40px 36px;
+    }
+
+    /* ── LOGO ── */
+    .logo-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 11px; margin-bottom: 28px;
+      animation: fadeIn 0.5s 0.1s both;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .logo-box {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; color: #fff;
+      box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+    }
+    .logo-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px; color: var(--ink);
+      letter-spacing: -0.3px;
+    }
+    .logo-text span {
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ── HEADING ── */
+    .heading-block {
+      text-align: center; margin-bottom: 28px;
+      animation: fadeIn 0.5s 0.15s both;
+    }
+    .heading-block h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px; color: var(--ink);
+      margin-bottom: 5px; letter-spacing: -0.3px;
+    }
+    .heading-block p {
+      font-size: 14px; font-weight: 400;
+      color: var(--muted);
+    }
+
+    .divider {
+      height: 1px; background: #f3f4f6;
+      margin-bottom: 26px;
+      animation: fadeIn 0.5s 0.18s both;
+    }
+
+    /* ── FLASH ── */
+    .flash {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: 10px;
+      font-size: 13.5px; margin-bottom: 18px;
+    }
+    .flash-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .flash-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .flash-info    { background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; }
+
+    /* ── FIELDS ── */
+    .field { margin-bottom: 18px; }
+    .field:nth-of-type(1) { animation: fadeIn 0.5s 0.22s both; }
+    .field:nth-of-type(2) { animation: fadeIn 0.5s 0.27s both; }
+
+    .field-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--ink); margin-bottom: 7px;
+      letter-spacing: 0.2px;
+    }
+
+    .field-wrap { position: relative; }
+
+    .f-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted-lite); font-size: 14px;
+      transition: color 0.2s; pointer-events: none;
+    }
+    .field-wrap:focus-within .f-icon { color: var(--indigo); }
+
+    .f-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 11px;
+      padding: 12px 14px 12px 42px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .f-input::placeholder { color: #d1d5db; }
+    .f-input:focus {
+      border-color: var(--indigo);
+      background: #fff;
+      box-shadow: 0 0 0 3.5px rgba(79,70,229,0.1);
+    }
+
+    .eye-btn {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      color: var(--muted-lite); cursor: pointer; font-size: 14px;
+      transition: color 0.2s; background: none; border: none; padding: 0;
+    }
+    .eye-btn:hover { color: var(--indigo); }
+
+    /* ── OPTIONS ROW ── */
+    .opts-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+      animation: fadeIn 0.5s 0.32s both;
+    }
+    .check-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      user-select: none;
+    }
+    .check-label input[type=checkbox] {
+      width: 16px; height: 16px;
+      accent-color: var(--indigo);
+      border-radius: 4px; cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 13px; font-weight: 600;
+      color: var(--indigo); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover { color: var(--indigo-dark); text-decoration: underline; }
+
+    /* ── BUTTON ── */
+    .btn-signin {
+      width: 100%; border: none; border-radius: 11px;
+      padding: 13.5px;
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; position: relative; overflow: hidden;
+      box-shadow: 0 4px 14px rgba(79,70,229,0.3), 0 1px 3px rgba(79,70,229,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeIn 0.5s 0.35s both;
+      letter-spacing: 0.2px;
+    }
+    .btn-signin::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    }
+    /* shimmer sweep */
+    .btn-signin::after {
+      content: '';
+      position: absolute; top: 0; left: -80%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: skewX(-15deg);
+      transition: left 0.55s ease;
+    }
+    .btn-signin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(79,70,229,0.4), 0 2px 6px rgba(79,70,229,0.25);
+    }
+    .btn-signin:hover::after { left: 140%; }
+    .btn-signin:active { transform: translateY(0); }
+
+    /* ── OR DIVIDER ── */
+    .or-row {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+      animation: fadeIn 0.5s 0.4s both;
+    }
+    .or-row::before, .or-row::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+    .or-row span {
+      font-size: 12px; font-weight: 500;
+      color: var(--muted-lite); letter-spacing: 0.5px;
+    }
+
+    /* ── REGISTER LINK ── */
+    .reg-row {
+      text-align: center;
+      font-size: 14px; color: var(--muted);
+      animation: fadeIn 0.5s 0.42s both;
+    }
+    .reg-row a {
+      color: var(--indigo); font-weight: 600;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .reg-row a:hover { color: var(--indigo-dark); text-decoration: underline; }
+
+    /* ── TRUST BADGES ── */
+    .trust-row {
+      display: flex; justify-content: center; gap: 20px;
+      margin-top: 24px; padding-top: 20px;
+      border-top: 1px solid #f3f4f6;
+      animation: fadeIn 0.5s 0.46s both;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--muted-lite); font-weight: 500;
+    }
+    .trust-item i { color: var(--indigo-lite); font-size: 11px; }
+
+    /* ── ALERT BANNER ── */
+    .alert-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border-radius: 11px;
+      font-size: 13.5px; font-weight: 500;
+      margin-bottom: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .alert-banner span { flex: 1; }
+    .alert-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; opacity: 0.5; transition: opacity 0.2s;
+      padding: 0; line-height: 1;
+    }
+    .alert-close:hover { opacity: 1; }
+    .alert-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .alert-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .alert-info    { background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; }
+
+    /* ── FOOTER TAG ── */
+    .footer-tag {
+      text-align: center; margin-top: 20px;
+      font-size: 12px; color: #9ca3af;
+      animation: fadeIn 0.5s 0.5s both;
+    }
+    .footer-tag span {
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="card-wrap">
+    <div class="login-card">
+      <div class="card-strip"></div>
+
+      <!-- Logo -->
+      <div class="logo-row">
+        <div class="logo-box"><i class="fas fa-brain"></i></div>
+        <div class="logo-text">Skill<span>Bridge</span></div>
+      </div>
+
+      <!-- Heading -->
+      <div class="heading-block">
+        <h2>Welcome back 👋</h2>
+        <p>Sign in to continue your learning journey</p>
+      </div>
+      <div class="divider"></div>
+
+      <!-- Success / Error Message Banner -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% set category, message = messages[-1] %}
+          <div id="alertBanner" class="alert-banner alert-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+            <span>{{ message }}</span>
+            <button onclick="document.getElementById('alertBanner').style.display='none'" class="alert-close">✕</button>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Form -->
+      <form method="POST" action="{{ url_for('login') }}">
+
+        <div class="field">
+          <label class="field-label">Username or Email</label>
+          <div class="field-wrap">
+            <i class="fas fa-user f-icon"></i>
+            <input type="text" name="username" class="f-input" placeholder="Enter your username or email" required/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Password</label>
+          <div class="field-wrap">
+            <i class="fas fa-lock f-icon"></i>
+            <input type="password" name="password" id="pwd" class="f-input" placeholder="Enter your password" required/>
+            <button type="button" class="eye-btn" onclick="togglePwd()">
+              <i class="fas fa-eye" id="eyeIco"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="opts-row">
+          <label class="check-label">
+            <input type="checkbox" name="remember"/> Remember me
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-signin">
+          <i class="fas fa-arrow-right-to-bracket me-2"></i> Sign In
+        </button>
+      </form>
+
+      <div class="or-row"><span>OR</span></div>
+
+      <div class="reg-row">
+        Don't have an account? <a href="{{ url_for('register') }}">Create one free →</a>
+      </div>
+
+      <div class="trust-row">
+        <div class="trust-item"><i class="fas fa-shield-halved"></i> SSL Secured</div>
+        <div class="trust-item"><i class="fas fa-lock"></i> Encrypted</div>
+        <div class="trust-item"><i class="fas fa-user-shield"></i> Private</div>
+      </div>
+    </div>
+
+    <div class="footer-tag">
+      Powered by <span>SkillBridge AI</span> — Academic Edition
+    </div>
+  </div>
+
+  <script>
+    function togglePwd() {
+      const input = document.getElementById('pwd');
+      const icon  = document.getElementById('eyeIco');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.classList.toggle('fa-eye');
+      icon.classList.toggle('fa-eye-slash');
+    }
+  </script>
+</body>
+</html>

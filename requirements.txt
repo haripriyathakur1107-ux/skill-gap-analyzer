@@ -1,0 +1,8 @@
+Flask
+Flask-MySQLdb
+PyPDF2==3.0.1
+Werkzeug
+spacy
+openai>=1.0.0
+mysqlclient
+python-dotenv

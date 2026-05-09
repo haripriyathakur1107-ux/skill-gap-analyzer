@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Skill Gap Analysis</title>
+    <style>
+        body {font-family:'Plus Jakarta Sans','Segoe UI',sans-serif; background:#1a1040; color:white; display:flex; justify-content:center; padding:80px 20px 50px; min-height:100vh;}
+        .container {background:white; color:#333; padding:40px; border-radius:20px; width:760px; box-shadow:0 15px 35px rgba(0,0,0,0.3);}
+        input, textarea, select {width:100%; padding:12px; margin-bottom:20px; border-radius:12px; border:1px solid #ddd; box-sizing:border-box; font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;}
+        button {padding:14px; border-radius:12px; border:none; background:#4a0e8f; color:white; cursor:pointer; font-size:16px; font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;}
+        button:hover {transform:translateY(-2px); box-shadow:0 8px 20px rgba(83,74,183,0.3); background:#534AB7;}
+        .result {margin-top:25px; padding:20px; background:#EEEDFE; border-radius:15px; color:#3C3489;}
+        .matched {color:#1b5e20; display:inline-block; margin:4px 6px; background:#e8f5e9; padding:4px 12px; border-radius:20px; font-size:14px; border:1px solid #c8e6c9;}
+        .missing {color:#b71c1c; display:inline-block; margin:4px 6px; background:#ffebee; padding:4px 12px; border-radius:20px; font-size:14px; border:1px solid #ffcdd2;}
+        .soft-matched {color:#1565c0; display:inline-block; margin:4px 6px; background:#e3f2fd; padding:4px 12px; border-radius:20px; font-size:14px;}
+        .soft-missing {color:#e65100; display:inline-block; margin:4px 6px; background:#fff3e0; padding:4px 12px; border-radius:20px; font-size:14px;}
+        h2 {color:#3C3489; margin-bottom:5px;}
+        label {font-weight:600; color:#555; display:block; margin-bottom:6px;}
+        .progress-section {margin:25px 0; padding:20px; background:#EEEDFE; border-radius:15px; border:1px solid #AFA9EC;}
+        .progress-label {display:flex; justify-content:space-between; font-weight:600; color:#534AB7; margin-bottom:8px;}
+        .progress-bar-bg {background:#CECBF6; border-radius:10px; height:22px; overflow:hidden;}
+        .progress-bar-fill {height:100%; border-radius:10px; background:linear-gradient(90deg,#534AB7,#AFA9EC); transition:width 0.8s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:12px; color:white; font-weight:700;}
+        .progress-stats {display:flex; gap:15px; margin-top:12px; flex-wrap:wrap;}
+        .stat-box {background:white; border-radius:10px; padding:10px 16px; text-align:center; flex:1; min-width:100px; box-shadow:0 2px 8px rgba(83,74,183,0.1);}
+        .stat-num {font-size:22px; font-weight:700; color:#534AB7;}
+        .stat-label {font-size:12px; color:#888;}
+        .tabs {display:flex; gap:5px; margin:20px 0 0 0; flex-wrap:wrap;}
+        .tab-btn {flex:1; padding:10px; border:2px solid #534AB7; background:white; color:#534AB7; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px; transition:0.2s; min-width:120px;}
+        .tab-btn.active {background:#534AB7; color:white; border-color:#534AB7;}
+        .tab-content {display:none; margin-top:15px;}
+        .tab-content.active {display:block;}
+        .tab-nav {display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:2px solid #EEEDFE;}
+        .nav-btn {display:flex; align-items:center; gap:8px; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:0.2s;}
+        .nav-btn.back {background:#EEEDFE; color:#534AB7;}
+        .nav-btn.back:hover {background:#CECBF6; transform:translateY(-2px);}
+        .nav-btn.fwd {background:#534AB7; color:white;}
+        .nav-btn.fwd:hover {transform:translateY(-2px); box-shadow:0 4px 12px rgba(83,74,183,0.3);}
+        .nav-btn:disabled {opacity:0.3; cursor:not-allowed; transform:none !important; box-shadow:none !important;}
+        .tab-dots {display:flex; gap:6px; align-items:center;}
+        .tab-dot {width:8px; height:8px; border-radius:50%; background:#CECBF6; transition:0.3s;}
+        .tab-dot.active {background:#534AB7; width:20px; border-radius:4px;}
+        .learning-card {background:white; border:1px solid #AFA9EC; border-radius:14px; padding:16px 20px; margin:10px 0; box-shadow:0 2px 8px rgba(83,74,183,0.08); transition:0.2s;}
+        .learning-card:hover {box-shadow:0 4px 16px rgba(83,74,183,0.15); transform:translateY(-2px);}
+        .card-top {display:flex; align-items:flex-start; gap:15px;}
+        .learn-check {width:22px; height:22px; border-radius:6px; border:2px solid #534AB7; cursor:pointer; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:14px; transition:0.2s; user-select:none;}
+        .learn-check.done {background:#534AB7; color:white; border-color:#534AB7;}
+        .learn-info {flex:1;}
+        .learn-skill {font-weight:700; color:#333; font-size:15px; margin-bottom:4px;}
+        .learn-resource {color:#534AB7; font-size:13px; margin-bottom:6px;}
+        .learn-meta {display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+        .learn-tag {font-size:11px; padding:2px 10px; border-radius:20px; font-weight:600;}
+        .tag-duration {background:#e8f5e9; color:#2e7d32;}
+        .tag-level {background:#e3f2fd; color:#1565c0;}
+        .tag-soft {background:#fff3e0; color:#e65100;}
+        .tag-tech {background:#EEEDFE; color:#534AB7;}
+        .learn-actions {display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+        .learn-link {display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#534AB7; text-decoration:none; font-weight:600; padding:5px 12px; border:1px solid #534AB7; border-radius:8px; transition:0.2s;}
+        .learn-link:hover {background:#EEEDFE;}
+        .video-btn {display:inline-flex; align-items:center; gap:5px; font-size:12px; background:#ff1744; color:white; border:none; border-radius:8px; padding:5px 12px; cursor:pointer; font-weight:600; transition:0.2s;}
+        .video-btn:hover {background:#c62828; transform:translateY(-1px); box-shadow:0 3px 8px rgba(198,40,40,0.35);}
+        .save-btn {margin-top:20px; padding:12px 30px; width:auto; background:#388e3c; border-radius:10px; font-size:14px;}
+        .save-btn:hover {box-shadow:0 4px 12px rgba(56,142,60,0.3);}
+        .saved-msg {color:#388e3c; font-weight:600; font-size:14px; display:none; margin-top:8px;}
+        select {background:white;}
+        .section-divider {border:none; border-top:2px solid #f3e5f5; margin:20px 0;}
+        .tip {background:#fff8e1; border-left:4px solid #ffb300; padding:10px 15px; border-radius:8px; font-size:13px; color:#555; margin-bottom:20px;}
+        .skills-grid {display:flex; flex-wrap:wrap; gap:4px;}
+
+        /* NAVBAR */
+        .navbar {display:flex; justify-content:space-between; align-items:center; padding:14px 40px; background:rgba(255,255,255,0.12); backdrop-filter:blur(12px); position:fixed; top:0; left:0; right:0; z-index:800; border-bottom:1px solid rgba(255,255,255,0.15);}
+        .navbar-brand {color:white; font-size:18px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:8px;}
+        .navbar-links {display:flex; gap:6px; align-items:center;}
+        .navbar-links a {color:rgba(255,255,255,0.82); text-decoration:none; font-size:14px; font-weight:500; padding:7px 14px; border-radius:8px; transition:0.2s; white-space:nowrap;}
+        .navbar-links a:hover {background:rgba(255,255,255,0.15); color:white;}
+        .navbar-links a.active {background:rgba(255,255,255,0.22); color:white; font-weight:700;}
+        .navbar-links .nav-logout {color:rgba(255,180,180,0.9);}
+        .navbar-links .nav-logout:hover {background:rgba(255,100,100,0.2); color:#ff8a80;}
+
+        /* VIDEO MODAL */
+        .modal-bg {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:900; align-items:center; justify-content:center;}
+        .modal-bg.open {display:flex;}
+        .modal-box {background:white; border-radius:16px; width:90%; max-width:640px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+        .modal-head {display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:linear-gradient(135deg,#7b1fa2,#9c27b0); color:white;}
+        .modal-head h3 {margin:0; font-size:16px;}
+        .modal-close {background:none; border:none; color:white; font-size:22px; cursor:pointer; padding:0; line-height:1; transform:none !important; box-shadow:none !important;}
+        .modal-body {padding:20px;}
+        .video-frame {width:100%; background:#111; border-radius:10px; overflow:hidden; margin-bottom:10px; display:none;}
+        .video-frame iframe {width:100%; height:340px; border:none;}
+        .vid-open-btn {display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; background:linear-gradient(135deg,#ff1744,#c62828); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:12px; text-decoration:none; transition:0.2s;}
+        .vid-open-btn:hover {transform:translateY(-2px); box-shadow:0 6px 18px rgba(198,40,40,0.45);}
+        .video-list {display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;}
+        .v-item {display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid #e1bee7; border-radius:10px; cursor:pointer; transition:0.2s;}
+        .v-item:hover, .v-item.sel {background:#f3e5f5; border-color:#9c27b0;}
+        .v-thumb {width:56px; height:36px; background:#333; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-size:16px; flex-shrink:0;}
+        .v-info .v-title {font-size:13px; font-weight:600; color:#333;}
+        .v-info .v-ch {font-size:11px; color:#888; margin-top:2px;}
+
+        /* ASSESSMENT MODAL */
+        .assess-bg {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:1000; align-items:center; justify-content:center;}
+        .assess-bg.open {display:flex;}
+        .assess-box {background:white; border-radius:20px; width:90%; max-width:540px; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,0.5); animation:pop .3s ease;}
+        @keyframes pop {from{transform:scale(0.9) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1}}
+        .a-head {padding:22px 26px 14px; background:linear-gradient(135deg,#1a237e,#3949ab); color:white;}
+        .a-head h3 {margin:0 0 3px; font-size:17px; color:white;}
+        .a-head p {margin:0 0 12px; font-size:12px; opacity:.85; color:white;}
+        .a-prog-row {display:flex; justify-content:space-between; font-size:12px; opacity:.8; margin-bottom:5px; color:white;}
+        .a-bar-bg {background:rgba(255,255,255,.25); border-radius:6px; height:5px;}
+        .a-bar-fill {height:5px; border-radius:6px; background:#fff; transition:width .4s;}
+        .a-body {padding:22px 26px; background:white;}
+        .q-text {font-size:15px; font-weight:600; color:#1a237e; margin-bottom:16px; line-height:1.55;}
+        .opts {display:flex; flex-direction:column; gap:9px; margin-bottom:16px;}
+        /* IMPORTANT: .opt is a <div>, not a button — must explicitly reset all colors */
+        .opt {display:flex; align-items:center; gap:11px; padding:11px 14px; border:2px solid #d0d0d0; border-radius:10px; cursor:pointer; transition:0.2s; font-size:14px; color:#333 !important; background:#fafafa !important; user-select:none;}
+        .opt:hover {border-color:#7c4dff; background:#f0ebff !important; color:#3949ab !important;}
+        .opt.sel {border-color:#3949ab; background:#e8eaf6 !important; color:#1a237e !important;}
+        .opt.ok  {border-color:#388e3c !important; background:#e8f5e9 !important; color:#1b5e20 !important;}
+        .opt.bad {border-color:#c62828 !important; background:#ffebee !important; color:#b71c1c !important;}
+        .opt-circle {width:17px; height:17px; border-radius:50%; border:2px solid #9c27b0; flex-shrink:0; background:white;}
+        .opt.sel .opt-circle {background:#3949ab; border-color:#3949ab;}
+        .opt.ok  .opt-circle {background:#388e3c; border-color:#388e3c;}
+        .opt.bad .opt-circle {background:#c62828; border-color:#c62828;}
+        .a-fb {padding:11px 14px; border-radius:10px; font-size:13px; margin-bottom:14px; display:none;}
+        .a-fb.show {display:block;}
+        .a-fb.pass {background:#e8f5e9; color:#1b5e20 !important; border-left:4px solid #388e3c;}
+        .a-fb.fail {background:#ffebee; color:#b71c1c !important; border-left:4px solid #c62828;}
+        .a-foot {display:flex; justify-content:space-between; align-items:center; padding:14px 26px 20px; background:white;}
+        .a-skip {background:none !important; border:none; color:#9c27b0 !important; font-size:13px; cursor:pointer; text-decoration:underline; padding:0; transform:none !important; box-shadow:none !important;}
+        .a-next {padding:10px 22px; border-radius:10px; font-size:14px; font-weight:600; background:linear-gradient(135deg,#3949ab,#7c4dff) !important; color:white !important; border:none; cursor:pointer; transition:0.2s;}
+        .a-next:hover {transform:translateY(-2px); box-shadow:0 4px 12px rgba(57,73,171,.4);}
+        .a-next:disabled {opacity:.35; cursor:not-allowed; transform:none !important; box-shadow:none !important;}
+        .a-result {padding:30px; text-align:center; background:white;}
+        .r-emoji {font-size:60px; margin-bottom:12px;}
+        .r-score {font-size:40px; font-weight:800; color:#3949ab; margin-bottom:6px;}
+        .r-msg {font-size:15px; color:#555 !important; margin-bottom:22px; line-height:1.6;}
+        .r-btns {display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+        .btn-retry {padding:11px 22px; border-radius:10px; background:#f3e5f5 !important; color:#7b1fa2 !important; border:2px solid #9c27b0; cursor:pointer; font-weight:600; font-size:14px;}
+        .btn-done  {padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#388e3c,#66bb6a) !important; color:white !important; border:none; cursor:pointer; font-weight:600; font-size:14px;}
+        .btn-retry:hover {background:#e1bee7 !important;}
+        .btn-done:hover  {transform:translateY(-2px); box-shadow:0 4px 12px rgba(56,142,60,.3);}
+        /* Back-to-top button (Tab 0 → form) */
+        .back-to-form {background:#ede7f6 !important; color:#4a148c !important; border:2px dashed #9c27b0 !important; font-size:13px;}
+        .back-to-form:hover {background:#d1c4e9 !important; transform:translateY(-2px);}
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" href="/dashboard">🎯 Skill Gap Analyzer</a>
+    <div class="navbar-links">
+        <a href="/dashboard">🏠 Home</a>
+        <a href="/skill_gap" class="active">🔍 Analyze</a>
+        <a href="/job_explorer">💼 Jobs</a>
+        <a href="/my_progress">📈 Progress</a>
+        <a href="/logout" class="nav-logout">⏻ Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>🎯 Skill Gap Analyzer</h2>
+    <p style="color:#888; margin-top:0; margin-bottom:20px;">Enter your skills &amp; target job to find gaps and get a personalized learning roadmap.</p>
+
+    {% if error_msg %}
+    <div style="background:#ffebee;border-left:4px solid #c62828;padding:12px 16px;border-radius:8px;color:#c62828;margin-bottom:18px;font-size:14px;">
+        ⚠️ {{ error_msg }}
+    </div>
+    {% endif %}
+
+    <div id="invalid-job-msg" style="display:none;background:#fff3e0;border-left:4px solid #e65100;padding:12px 16px;border-radius:8px;color:#bf360c;margin-bottom:18px;font-size:14px;">
+        ⚠️ <strong>Invalid job role.</strong> Please enter a real job title like <em>Data Scientist</em>, <em>Graphic Designer</em>, or <em>Mehendi Artist</em>.
+    </div>
+
+    {% if ai_generated and selected_job %}
+    <div style="background:#f3e5f5;border-left:4px solid #9c27b0;padding:12px 16px;border-radius:8px;color:#7b1fa2;margin-bottom:18px;font-size:14px;">
+        ✨ <strong>AI-Generated Role:</strong> Skills for <em>{{ selected_job | title }}</em> were generated by AI and saved to the database for future users.
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="skillgap-form" onsubmit="return validateJobInput()">
+        <label for="job">🏢 Target Job Role <span style="font-weight:400;color:#aaa;">(select from list or type any role)</span></label>
+        <div style="position:relative;margin-bottom:20px;">
+            <input type="text" name="job" id="job" list="job-list"
+                   placeholder="e.g. Data Scientist, Mehendi Artist, Robotics Engineer..."
+                   value="{{ selected_job }}"
+                   style="margin-bottom:0;padding-right:44px;height:54px;font-size:16px;font-weight:500;border:2px solid #AFA9EC;border-radius:14px;padding-left:16px;background:#faf9ff;color:#26215C;"
+                   autocomplete="off">
+            <datalist id="job-list">
+                {% for r in all_roles %}
+                <option value="{{ r.key }}">{{ r.name }}</option>
+                {% endfor %}
+            </datalist>
+            <span id="ai-indicator" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#9c27b0;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">AI</span>
+        </div>
+        <label for="skills">💡 Your Current Skills <span style="font-weight:400;color:#aaa;">(comma separated)</span></label>
+        <script>
+        (function(){
+            const knownRoles = new Set([{% for r in all_roles %}"{{ r.key }}"{% if not loop.last %},{% endif %}{% endfor %}]);
+            const inp = document.getElementById('job');
+            const badge = document.getElementById('ai-indicator');
+            function check(){
+                const v = inp.value.trim().toLowerCase();
+                badge.style.display = (v && !knownRoles.has(v)) ? 'inline-block' : 'none';
+            }
+            inp.addEventListener('input', check);
+            check();
+        })();
+        </script>
+        <textarea name="skills" id="skills-input" rows="3" placeholder="e.g. Python, SQL, Communication, Teamwork"></textarea>
+        <div id="invalid-skills-msg" style="display:none;background:#fff3e0;border-left:4px solid #e65100;padding:12px 16px;border-radius:8px;color:#bf360c;margin-top:-14px;margin-bottom:16px;font-size:14px;">
+            ⚠️ <strong>Invalid skills.</strong> Please enter real skill names like <em>Python, SQL, Communication</em> — not numbers or random text.
+        </div>
+        <label for="resume">📄 Upload Resume (PDF – optional)</label>
+        <input type="file" name="resume" accept=".pdf">
+        <button type="submit" style="width:100%;">🔍 Analyze Skill Gap</button>
+    </form>
+
+    {% if matched_skills or missing_skills or soft_skills_matched or soft_skills_missing %}
+    <hr class="section-divider">
+
+    <div class="progress-section">
+        <div class="progress-label">
+            <span>📊 Overall Skill Readiness</span>
+            <span id="progressPct">{{ progress_percent }}%</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar" style="width:{{ progress_percent }}%">
+                {% if progress_percent > 10 %}{{ progress_percent }}%{% endif %}
+            </div>
+        </div>
+        <div class="progress-stats">
+            <div class="stat-box"><div class="stat-num" id="skillsHave" style="color:#388e3c;">{{ matched_skills|length + soft_skills_matched|length }}</div><div class="stat-label">Skills You Have</div></div>
+            <div class="stat-box"><div class="stat-num" id="skillsLearn" style="color:#c62828;">{{ missing_skills|length + soft_skills_missing|length }}</div><div class="stat-label">Skills to Learn</div></div>
+            <div class="stat-box"><div class="stat-num" id="learnedCount" style="color:#7b1fa2;">0</div><div class="stat-label">Courses Completed</div></div>
+            <div class="stat-box"><div class="stat-num" id="adjustedPct" style="color:#e040fb;">{{ progress_percent }}%</div><div class="stat-label">Adjusted Progress</div></div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="goTab(0)">🔧 Technical Skills</button>
+        <button class="tab-btn" onclick="goTab(1)">🧠 Soft Skills</button>
+        <button class="tab-btn" onclick="goTab(2)">📚 Learning Path</button>
+    </div>
+
+    <!-- TAB 0: Technical -->
+    <div class="tab-content active" id="tab-0">
+        {% if matched_skills %}
+        <div class="result">
+            <h3 style="color:#388e3c;margin-top:0;">✅ Technical Skills You Have</h3>
+            <div class="skills-grid">{% for s in matched_skills %}<span class="matched">✓ {{ s }}</span>{% endfor %}</div>
+        </div>{% endif %}
+        {% if missing_skills %}
+        <div class="result" style="background:#fff5f5;">
+            <h3 style="color:#c62828;margin-top:0;">❌ Missing Technical Skills</h3>
+            <div class="skills-grid">{% for s in missing_skills %}<span class="missing">✗ {{ s }}</span>{% endfor %}</div>
+        </div>{% endif %}
+        {% if not matched_skills and not missing_skills %}<p style="color:#aaa;text-align:center;padding:20px;">No technical skill data found.</p>{% endif %}
+        <div class="tab-nav">
+            <button class="nav-btn back back-to-form" onclick="scrollToForm()">↑ Back to Form</button>
+            <div class="tab-dots"><div class="tab-dot active" id="d0"></div><div class="tab-dot" id="d1"></div><div class="tab-dot" id="d2"></div></div>
+            <button class="nav-btn fwd" onclick="goTab(1)">Soft Skills →</button>
+        </div>
+    </div>
+
+    <!-- TAB 1: Soft Skills -->
+    <div class="tab-content" id="tab-1">
+        {% if soft_skills_matched %}
+        <div class="result">
+            <h3 style="color:#1565c0;margin-top:0;">✅ Soft Skills You Have</h3>
+            <div class="skills-grid">{% for s in soft_skills_matched %}<span class="soft-matched">✓ {{ s }}</span>{% endfor %}</div>
+        </div>{% endif %}
+        {% if soft_skills_missing %}
+        <div class="result" style="background:#fff8f0;">
+            <h3 style="color:#e65100;margin-top:0;">⚠️ Soft Skills to Develop</h3>
+            <div class="skills-grid">{% for s in soft_skills_missing %}<span class="soft-missing">→ {{ s }}</span>{% endfor %}</div>
+        </div>{% endif %}
+        {% if not soft_skills_matched and not soft_skills_missing %}<p style="color:#aaa;text-align:center;padding:20px;">No soft skill data found.</p>{% endif %}
+        <div class="tab-nav">
+            <button class="nav-btn back" onclick="goTab(0)">← Technical Skills</button>
+            <div class="tab-dots"><div class="tab-dot" id="e0"></div><div class="tab-dot active" id="e1"></div><div class="tab-dot" id="e2"></div></div>
+            <button class="nav-btn fwd" onclick="goTab(2)">Learning Path →</button>
+        </div>
+    </div>
+
+    <!-- TAB 2: Learning Path -->
+    <div class="tab-content" id="tab-2">
+        {% if learning_paths %}
+        <div class="tip">💡 <strong>Tip:</strong> Click ▶ Watch Videos to learn, then click the checkbox to take a quick assessment before marking complete!</div>
+        {% for path in learning_paths %}
+        <div class="learning-card" id="card-{{ loop.index }}">
+            <div class="card-top">
+                <div class="learn-check" id="chk-{{ loop.index }}" onclick="openAssessment({{ loop.index }}, '{{ path.skill | replace("'", "\\'") }}')"></div>
+                <div class="learn-info">
+                    <div class="learn-skill">{% if path.is_soft %}🧠{% else %}🔧{% endif %} {{ path.skill | title }}</div>
+                    <div class="learn-resource">📖 {{ path.resource }}</div>
+                    <div class="learn-meta">
+                        <span class="learn-tag tag-duration">⏱ {{ path.duration }}</span>
+                        <span class="learn-tag tag-level">{{ path.level }}</span>
+                        {% if path.is_soft %}<span class="learn-tag tag-soft">Soft Skill</span>{% else %}<span class="learn-tag tag-tech">Technical</span>{% endif %}
+                    </div>
+                    <div class="learn-actions">
+                        <a class="learn-link" href="{{ path.link }}" target="_blank">🔗 Start Learning</a>
+                        <button class="video-btn" onclick="openVideo('{{ path.skill | replace("'", "\\'") }}')">▶ Watch Videos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <button class="save-btn" onclick="saveProgress(false)">💾 Save My Progress</button>
+        <div class="saved-msg" id="savedMsg">✅ Progress saved!</div>
+        {% else %}
+        <div style="text-align:center;padding:30px;color:#7b1fa2;"><div style="font-size:50px;">🎉</div><h3>You have all the required skills!</h3><p style="color:#888;">You are fully ready for this role.</p></div>
+        {% endif %}
+        <div class="tab-nav">
+            <button class="nav-btn back" onclick="goTab(1)">← Soft Skills</button>
+            <div class="tab-dots"><div class="tab-dot" id="f0"></div><div class="tab-dot" id="f1"></div><div class="tab-dot active" id="f2"></div></div>
+            <button class="nav-btn fwd" disabled>Done ✓</button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- VIDEO MODAL -->
+<div class="modal-bg" id="vidBg">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3 id="vidTitle">📺 Learning Videos</h3>
+            <button class="modal-close" onclick="closeVideo()">✕</button>
+        </div>
+        <div class="modal-body">
+            <a class="vid-open-btn" id="vidOpenBtn" href="#" target="_blank" rel="noopener">
+                ▶ &nbsp;Watch on YouTube
+            </a>
+            <div class="video-list" id="vidList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ASSESSMENT MODAL -->
+<div class="assess-bg" id="assessBg">
+    <div class="assess-box">
+        <div id="quizView">
+            <div class="a-head">
+                <h3 id="aTitle">📝 Assessment</h3>
+                <p id="aSub">Answer the questions to verify your understanding</p>
+                <div class="a-prog-row"><span id="aQnum">Q 1 of 3</span><span id="aScoreDisp">Score: 0</span></div>
+                <div class="a-bar-bg"><div class="a-bar-fill" id="aBar" style="width:0%"></div></div>
+            </div>
+            <div class="a-body">
+                <div class="q-text" id="qText"></div>
+                <div class="opts" id="qOpts"></div>
+                <div class="a-fb" id="aFb"></div>
+            </div>
+            <div class="a-foot">
+                <button class="a-skip" onclick="skipAssess()">Skip Assessment</button>
+                <button class="a-next" id="aNext" onclick="nextQ()" disabled>Next →</button>
+            </div>
+        </div>
+        <div id="resultView" style="display:none;">
+            <div class="a-result">
+                <div class="r-emoji" id="rEmoji"></div>
+                <div class="r-score" id="rScore"></div>
+                <div class="r-msg" id="rMsg"></div>
+                <div class="r-btns">
+                    <button class="btn-retry" onclick="retryAssess()">🔄 Retry</button>
+                    <button class="btn-done" onclick="markDone()">✅ Mark Complete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Tabs ──
+let curTab = 0;
+
+function scrollToForm() {
+    document.querySelector('form').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function goTab(i) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + i).classList.add('active');
+    document.querySelectorAll('.tab-btn')[i].classList.add('active');
+    curTab = i;
+    syncDots();
+    window.scrollTo({top: document.querySelector('.tabs').offsetTop - 20, behavior:'smooth'});
+}
+
+function syncDots() {
+    ['d','e','f'].forEach(p => {
+        for (let k=0;k<3;k++) {
+            const el = document.getElementById(p+k);
+            if (el) el.className = 'tab-dot' + (k===curTab?' active':'');
+        }
+    });
+}
+
+// ── VIDEO ──
+// All videos use YouTube search embeds — always live, never "unavailable"
+const VDB = {
+    "python": [
+        {t:"Python Full Course for Beginners",       q:"python full course beginners freeCodeCamp 2024"},
+        {t:"Python Tutorial – Programming with Mosh", q:"python tutorial programming with mosh 2024"},
+        {t:"Python Crash Course",                     q:"python crash course beginner tutorial 2024"}
+    ],
+    "machine learning": [
+        {t:"Machine Learning Full Course",            q:"machine learning full course beginners freeCodeCamp"},
+        {t:"ML for Beginners – Microsoft",            q:"machine learning beginners microsoft tutorial"},
+        {t:"Andrew Ng – ML Specialization Intro",     q:"andrew ng machine learning course introduction"}
+    ],
+    "deep learning": [
+        {t:"Deep Learning Crash Course",              q:"deep learning crash course beginners 2024"},
+        {t:"Neural Networks Explained",               q:"neural networks explained 3blue1brown"},
+        {t:"Deep Learning with PyTorch",              q:"deep learning pytorch tutorial beginners"}
+    ],
+    "sql": [
+        {t:"SQL Full Course – freeCodeCamp",          q:"SQL full course beginners freeCodeCamp"},
+        {t:"SQL Tutorial – Programming with Mosh",    q:"sql tutorial programming with mosh"},
+        {t:"SQL in 60 Minutes",                       q:"sql beginners tutorial 60 minutes 2024"}
+    ],
+    "javascript": [
+        {t:"JavaScript Full Course – freeCodeCamp",   q:"javascript full course beginners freeCodeCamp 2024"},
+        {t:"JavaScript Tutorial – Mosh",              q:"javascript tutorial programming with mosh"},
+        {t:"Modern JavaScript ES6+",                  q:"modern javascript es6 tutorial traversy media"}
+    ],
+    "react": [
+        {t:"React JS Full Course 2024",               q:"react js full course 2024 beginners"},
+        {t:"React Tutorial – Mosh",                   q:"react tutorial programming with mosh 2024"},
+        {t:"React Hooks Explained",                   q:"react hooks tutorial beginners 2024"}
+    ],
+    "docker": [
+        {t:"Docker Tutorial for Beginners",           q:"docker tutorial for beginners techworld nana"},
+        {t:"Docker Full Course – freeCodeCamp",       q:"docker full course freeCodeCamp 2024"},
+        {t:"Docker in 100 Seconds",                   q:"docker explained 100 seconds fireship"}
+    ],
+    "kubernetes": [
+        {t:"Kubernetes Tutorial for Beginners",       q:"kubernetes tutorial for beginners techworld nana"},
+        {t:"Kubernetes Full Course – freeCodeCamp",   q:"kubernetes full course freeCodeCamp 2024"},
+        {t:"Kubernetes in 100 Seconds",               q:"kubernetes 100 seconds fireship"}
+    ],
+    "git": [
+        {t:"Git & GitHub Crash Course",               q:"git github crash course traversy media 2024"},
+        {t:"Git Tutorial – Mosh",                     q:"git tutorial programming with mosh"},
+        {t:"Git for Beginners – Full Course",         q:"git beginners full course freeCodeCamp"}
+    ],
+    "nodejs": [
+        {t:"Node.js Crash Course – Traversy",         q:"nodejs crash course traversy media 2024"},
+        {t:"Node.js Full Course – freeCodeCamp",      q:"nodejs full course freeCodeCamp 2024"},
+        {t:"Node.js Tutorial – Mosh",                 q:"nodejs tutorial programming with mosh"}
+    ],
+    "aws": [
+        {t:"AWS Cloud Practitioner – freeCodeCamp",   q:"aws cloud practitioner full course freeCodeCamp 2024"},
+        {t:"AWS for Beginners",                       q:"aws beginners tutorial 2024"},
+        {t:"AWS Core Services Explained",             q:"aws core services explained tutorial 2024"}
+    ],
+    "typescript": [
+        {t:"TypeScript Full Course – freeCodeCamp",   q:"typescript full course freeCodeCamp 2024"},
+        {t:"TypeScript Tutorial – Mosh",              q:"typescript tutorial programming with mosh"},
+        {t:"TypeScript for Beginners",                q:"typescript beginners tutorial 2024"}
+    ],
+    "django": [
+        {t:"Django Full Course – freeCodeCamp",       q:"django full course freeCodeCamp 2024"},
+        {t:"Django Tutorial – Traversy Media",        q:"django crash course traversy media 2024"},
+        {t:"Django for Beginners",                    q:"django beginners tutorial python 2024"}
+    ],
+    "flask": [
+        {t:"Flask Full Course – freeCodeCamp",        q:"flask full course python freeCodeCamp"},
+        {t:"Flask Tutorial – Traversy",               q:"flask crash course traversy media python"},
+        {t:"Build a Flask Web App",                   q:"flask web application tutorial python 2024"}
+    ],
+    "tensorflow": [
+        {t:"TensorFlow 2.0 Full Course",              q:"tensorflow 2.0 full course freeCodeCamp"},
+        {t:"TensorFlow for Beginners",                q:"tensorflow tutorial beginners 2024"},
+        {t:"TensorFlow Crash Course",                 q:"tensorflow crash course machine learning 2024"}
+    ],
+    "pytorch": [
+        {t:"PyTorch Full Course – freeCodeCamp",      q:"pytorch full course freeCodeCamp 2024"},
+        {t:"PyTorch for Beginners",                   q:"pytorch tutorial beginners 2024"},
+        {t:"Deep Learning with PyTorch",              q:"deep learning pytorch tutorial 2024"}
+    ],
+    "pandas": [
+        {t:"Pandas Tutorial – Corey Schafer",         q:"pandas tutorial corey schafer python"},
+        {t:"Pandas Full Course – freeCodeCamp",       q:"pandas full course freeCodeCamp data analysis"},
+        {t:"Data Analysis with Pandas",               q:"data analysis pandas tutorial 2024"}
+    ],
+    "numpy": [
+        {t:"NumPy Tutorial – freeCodeCamp",           q:"numpy tutorial freeCodeCamp python"},
+        {t:"NumPy for Beginners",                     q:"numpy beginners tutorial python 2024"},
+        {t:"NumPy Crash Course",                      q:"numpy crash course python data science"}
+    ],
+    "linux": [
+        {t:"Linux Command Line Full Course",          q:"linux command line full course freeCodeCamp"},
+        {t:"Linux for Beginners",                     q:"linux beginners tutorial 2024"},
+        {t:"Linux Basics Crash Course",               q:"linux basics crash course 2024"}
+    ],
+    "data visualization": [
+        {t:"Data Visualization Full Course",          q:"data visualization full course python matplotlib"},
+        {t:"Tableau for Beginners",                   q:"tableau beginners tutorial 2024"},
+        {t:"Data Visualization with Python",          q:"data visualization python seaborn matplotlib 2024"}
+    ],
+    "communication": [
+        {t:"Communication Skills – Tips & Strategies",q:"communication skills tips strategies workplace"},
+        {t:"How to Communicate Effectively – TED",    q:"communicate effectively ted talk"},
+        {t:"Professional Communication Course",       q:"professional communication course workplace 2024"}
+    ],
+    "leadership": [
+        {t:"Leadership Skills – Full Course",         q:"leadership skills full course 2024"},
+        {t:"What Makes a Great Leader – TED Talk",    q:"what makes a great leader ted talk"},
+        {t:"How to Be a Better Leader",               q:"how to be a better leader tips 2024"}
+    ],
+    "problem solving": [
+        {t:"Problem Solving Skills – Tutorial",       q:"problem solving skills tutorial techniques 2024"},
+        {t:"Critical Thinking & Problem Solving",     q:"critical thinking problem solving course"},
+        {t:"How to Solve Hard Problems",              q:"how to solve hard problems techniques tutorial"}
+    ],
+    "teamwork": [
+        {t:"Teamwork & Collaboration Skills",         q:"teamwork collaboration skills workplace 2024"},
+        {t:"How to Work Effectively in a Team",       q:"how to work effectively in a team tutorial"},
+        {t:"Building High-Performance Teams",         q:"building high performance teams leadership"}
+    ],
+    "agile methodology": [
+        {t:"Agile Full Course – Scrum Explained",     q:"agile scrum full course tutorial 2024"},
+        {t:"Agile for Beginners",                     q:"agile for beginners tutorial 2024"},
+        {t:"Scrum in Under 10 Minutes",               q:"scrum explained under 10 minutes"}
+    ],
+    "figma": [
+        {t:"Figma Tutorial for Beginners 2024",       q:"figma tutorial beginners 2024"},
+        {t:"Figma UI Design – Full Course",           q:"figma ui design full course 2024"},
+        {t:"Figma Crash Course",                      q:"figma crash course design 2024"}
+    ],
+    "statistics": [
+        {t:"Statistics Full Course – freeCodeCamp",   q:"statistics full course freeCodeCamp"},
+        {t:"Statistics for Data Science",             q:"statistics data science beginners 2024"},
+        {t:"Khan Academy Statistics",                 q:"statistics beginners khan academy tutorial"}
+    ]
+};
+
+// Build 3 search-based fallback videos for any skill not in VDB
+function getVideos(skill) {
+    const key = skill.toLowerCase();
+    if (VDB[key]) return VDB[key];
+    return [
+        {t:`${skill} Tutorial for Beginners`,   q:`${skill} tutorial for beginners 2024`},
+        {t:`${skill} Crash Course`,             q:`${skill} crash course 2024`},
+        {t:`${skill} Full Course`,              q:`${skill} full course tutorial`}
+    ];
+}
+
+let curVids = [], curVidIdx = 0;
+
+function openVideo(skill) {
+    curVids = getVideos(skill);
+    curVidIdx = 0;
+    document.getElementById('vidTitle').textContent = `📺 ${skill.charAt(0).toUpperCase()+skill.slice(1)} – Videos`;
+    renderVidList();
+    setVideo(0);
+    document.getElementById('vidBg').classList.add('open');
+}
+
+function renderVidList() {
+    document.getElementById('vidList').innerHTML = curVids.map((v,i) => `
+        <div class="v-item ${i===0?'sel':''}" id="vi-${i}" onclick="setVideo(${i})">
+            <div class="v-thumb">▶</div>
+            <div class="v-info"><div class="v-title">${v.t}</div><div class="v-ch">YouTube Search</div></div>
+        </div>`).join('');
+}
+
+function setVideo(i) {
+    curVidIdx = i;
+    document.querySelectorAll('.v-item').forEach((el,k) => el.className='v-item'+(k===i?' sel':''));
+    const v = curVids[i];
+    const q = encodeURIComponent(v.q || v.t);
+    const url = `https://www.youtube.com/results?search_query=${q}`;
+    const btn = document.getElementById('vidOpenBtn');
+    btn.href = url;
+    btn.textContent = `▶  Watch: "${v.t}" on YouTube`;
+}
+
+function closeVideo() {
+    document.getElementById('vidBg').classList.remove('open');
+}
+
+document.getElementById('vidBg').addEventListener('click', e => { if(e.target===e.currentTarget) closeVideo(); });
+
+// ── ASSESSMENT ──
+const QDB = {
+    "python":[
+        {q:"What does `len()` return?",opts:["Last element","Number of items","Data type","Memory size"],ans:1,exp:"len() returns the count of items in a sequence."},
+        {q:"Keyword to define a function in Python?",opts:["func","define","def","function"],ans:2,exp:"Python uses 'def' to define functions."},
+        {q:"Output of `print(type([]))`?",opts:["<class 'dict'>","<class 'tuple'>","<class 'set'>","<class 'list'>"],ans:3,exp:"[] is an empty list, so type([]) returns <class 'list'>."}
+    ],
+    "machine learning":[
+        {q:"Best algorithm for classification?",opts:["Linear Regression","K-Means","Random Forest","PCA"],ans:2,exp:"Random Forest is widely used for classification tasks."},
+        {q:"What is 'overfitting'?",opts:["Performs well on train, poorly on test","Model is too simple","Too few parameters","Model ignores training data"],ans:0,exp:"Overfitting means the model memorizes training data but fails to generalize."},
+        {q:"Purpose of a validation set?",opts:["Train the model","Tune hyperparameters","Deploy the model","Store raw data"],ans:1,exp:"Validation sets help tune hyperparameters and monitor training performance."}
+    ],
+    "deep learning":[
+        {q:"What is a neural network layer called that's neither input nor output?",opts:["Hidden layer","Middle layer","Core layer","Internal layer"],ans:0,exp:"Layers between input and output are called hidden layers."},
+        {q:"Which function introduces non-linearity in neural networks?",opts:["Linear","Softmax only","Activation function","Loss function"],ans:2,exp:"Activation functions like ReLU and sigmoid add non-linearity to neural networks."},
+        {q:"What does CNN stand for?",opts:["Circular Neural Network","Convolutional Neural Network","Connected Node Network","Clustered Neural Net"],ans:1,exp:"CNN = Convolutional Neural Network, widely used for image recognition."}
+    ],
+    "sql":[
+        {q:"Which clause filters rows AFTER grouping?",opts:["WHERE","FILTER","HAVING","GROUP BY"],ans:2,exp:"HAVING filters groups; WHERE filters individual rows before grouping."},
+        {q:"What does JOIN do?",opts:["Deletes duplicates","Combines rows from tables","Sorts results","Filters NULLs"],ans:1,exp:"JOIN combines rows from two or more tables on a related column."},
+        {q:"Which SQL statement retrieves data?",opts:["INSERT","UPDATE","SELECT","DELETE"],ans:2,exp:"SELECT is used to query and retrieve data from tables."}
+    ],
+    "javascript":[
+        {q:"What does `===` check?",opts:["Value only","Type only","Both value and type","Neither"],ans:2,exp:"=== (strict equality) checks both value AND type."},
+        {q:"Method to add to end of array?",opts:["push()","pop()","shift()","unshift()"],ans:0,exp:"push() appends elements to the end of an array."},
+        {q:"What is a Promise?",opts:["A loop","Object for future value","A variable type","CSS selector"],ans:1,exp:"A Promise represents the eventual result of an async operation."}
+    ],
+    "typescript":[
+        {q:"TypeScript is a superset of?",opts:["Java","Python","JavaScript","C#"],ans:2,exp:"TypeScript extends JavaScript with static typing and compiles to JS."},
+        {q:"How do you declare a typed variable in TypeScript?",opts:["var x = int","let x: number","const x as number","int x"],ans:1,exp:"TypeScript uses the colon syntax: let x: number = 5."},
+        {q:"What is an interface in TypeScript?",opts:["A class","A function","A contract defining object shape","A module"],ans:2,exp:"Interfaces define the structure (shape) that objects must follow."}
+    ],
+    "react":[
+        {q:"Hook for state in functional component?",opts:["useEffect","useRef","useState","useContext"],ans:2,exp:"useState manages local state in functional components."},
+        {q:"JSX stands for?",opts:["JavaScript XML","Java Syntax Ext.","JSON Exchange","JavaScript Express"],ans:0,exp:"JSX = JavaScript XML — HTML-like syntax inside JS."},
+        {q:"When does useEffect run by default?",opts:["Only on mount","Only on unmount","After every render","Never"],ans:2,exp:"Without a dependency array, useEffect runs after every render."}
+    ],
+    "nodejs":[
+        {q:"Node.js runs JavaScript on?",opts:["Browser","Server/backend","Database","Mobile"],ans:1,exp:"Node.js is a server-side runtime for JavaScript built on Chrome's V8 engine."},
+        {q:"Which module handles HTTP in Node.js?",opts:["fs","path","http","os"],ans:2,exp:"The built-in 'http' module lets you create servers and handle requests."},
+        {q:"What is npm?",opts:["Node Package Manager","Node Process Monitor","New Python Module","Network Protocol Manager"],ans:0,exp:"npm (Node Package Manager) is used to install and manage JavaScript packages."}
+    ],
+    "html":[
+        {q:"What does HTML stand for?",opts:["Hyperlink Text Markup Language","HyperText Markup Language","Hyperlink Transfer Markup Language","HighText Machine Language"],ans:1,exp:"HTML = HyperText Markup Language, the standard for web page structure."},
+        {q:"Which tag is used for the largest heading?",opts:["<h6>","<h3>","<h1>","<header>"],ans:2,exp:"<h1> is the largest/most important heading tag in HTML."},
+        {q:"Which attribute is used to add a URL to an anchor tag?",opts:["src","link","href","url"],ans:2,exp:"The href attribute specifies the URL in an <a> anchor tag."}
+    ],
+    "css":[
+        {q:"Which property changes text color in CSS?",opts:["font-color","text-color","color","background-color"],ans:2,exp:"The 'color' property in CSS controls text color."},
+        {q:"What does `display: flex` do?",opts:["Hides element","Creates a flexible box layout","Adds animation","Makes text bold"],ans:1,exp:"Flexbox creates a responsive layout where children align along axes."},
+        {q:"How to center a block element horizontally with CSS?",opts:["text-align:center","margin:auto","align:center","position:center"],ans:1,exp:"margin: 0 auto centers a block element within its parent."}
+    ],
+    "docker":[
+        {q:"What is a Docker image?",opts:["A running container","A blueprint for containers","A database snapshot","A network config"],ans:1,exp:"A Docker image is a read-only blueprint used to create containers."},
+        {q:"Command to run a Docker container?",opts:["docker start","docker build","docker run","docker pull"],ans:2,exp:"'docker run' creates and starts a container from an image."},
+        {q:"What is Docker Compose used for?",opts:["Build single images","Run multi-container apps","Monitor containers","Push to registry"],ans:1,exp:"Docker Compose defines and runs multi-container Docker applications."}
+    ],
+    "kubernetes":[
+        {q:"What is a Pod in Kubernetes?",opts:["A node","Smallest deployable unit containing containers","A cluster","A namespace"],ans:1,exp:"A Pod is the smallest deployable unit in Kubernetes, hosting one or more containers."},
+        {q:"What does kubectl get pods do?",opts:["Deletes pods","Lists running pods","Creates pods","Restarts pods"],ans:1,exp:"kubectl get pods lists all pods in the current namespace."},
+        {q:"What is a Kubernetes Service?",opts:["A pod","A stable network endpoint to access pods","A node","A volume"],ans:1,exp:"A Service provides a stable IP and DNS name to access a set of pods."}
+    ],
+    "aws":[
+        {q:"What does S3 stand for in AWS?",opts:["Simple Storage Service","Secure Server System","Scalable Storage Solution","Simple Server System"],ans:0,exp:"S3 = Simple Storage Service — object storage for files, backups, and assets."},
+        {q:"AWS EC2 provides?",opts:["Database hosting","Virtual servers in the cloud","DNS management","Email services"],ans:1,exp:"EC2 (Elastic Compute Cloud) provides resizable virtual machines in the cloud."},
+        {q:"What is IAM in AWS?",opts:["Internet Access Management","Identity and Access Management","Internal Application Manager","Integrated API Module"],ans:1,exp:"IAM manages who can access what AWS resources — users, roles, and policies."}
+    ],
+    "azure":[
+        {q:"Azure Blob Storage is used for?",opts:["Running VMs","Storing unstructured data","Managing DNS","Running SQL queries"],ans:1,exp:"Azure Blob Storage stores large amounts of unstructured data like images and documents."},
+        {q:"Azure Active Directory is used for?",opts:["File storage","Identity and access management","Networking","Containers"],ans:1,exp:"Azure AD manages identities, authentication, and access to Azure resources."},
+        {q:"What is an Azure Resource Group?",opts:["A VM size","A logical container for related resources","A subscription tier","A networking tool"],ans:1,exp:"A Resource Group is a logical container that holds related Azure resources."}
+    ],
+    "gcp":[
+        {q:"Google Cloud's object storage service is?",opts:["GCS (Cloud Storage)","BigQuery","Cloud Run","App Engine"],ans:0,exp:"Google Cloud Storage (GCS) is GCP's object storage for any type of data."},
+        {q:"BigQuery is primarily used for?",opts:["Running containers","Serverless data analytics","Email hosting","VM management"],ans:1,exp:"BigQuery is a serverless, scalable data warehouse for analytics workloads."},
+        {q:"What is Cloud Run?",opts:["A VM service","A database","A managed platform for containerized apps","A DNS service"],ans:2,exp:"Cloud Run runs stateless containers in a fully managed environment."}
+    ],
+    "git":[
+        {q:"Command to stage all changes?",opts:["git commit -a","git add .","git push","git stash"],ans:1,exp:"'git add .' stages all changed files in the current directory."},
+        {q:"What does `git pull` do?",opts:["Uploads local commits","Fetches and merges remote changes","Creates a branch","Reverts changes"],ans:1,exp:"git pull fetches and merges changes from the remote repository."},
+        {q:"Purpose of branching in Git?",opts:["Delete old commits","Work on features without affecting main code","Merge two repos","Back up the project"],ans:1,exp:"Branches let you develop features or fixes independently from the main codebase."}
+    ],
+    "linux":[
+        {q:"Command to list files in a directory?",opts:["dir","show","ls","list"],ans:2,exp:"'ls' lists files and directories in the current or specified directory."},
+        {q:"What does 'chmod 755' do?",opts:["Deletes the file","Sets read/write/execute for owner, read/execute for others","Encrypts the file","Moves the file"],ans:1,exp:"chmod 755 gives full permissions to owner and read+execute to group/others."},
+        {q:"Which command shows running processes?",opts:["proc","show","tasks","ps"],ans:3,exp:"'ps' (and 'top') display currently running processes."}
+    ],
+    "networking":[
+        {q:"What does DNS stand for?",opts:["Dynamic Network Service","Domain Name System","Data Node Server","Distributed Network System"],ans:1,exp:"DNS translates human-readable domain names into IP addresses."},
+        {q:"Which protocol is used for secure web browsing?",opts:["HTTP","FTP","HTTPS","SMTP"],ans:2,exp:"HTTPS (HTTP Secure) encrypts communication using TLS/SSL."},
+        {q:"What is a subnet?",opts:["A type of firewall","A subdivision of an IP network","A DNS record","A web server"],ans:1,exp:"A subnet is a logical subdivision of an IP network."}
+    ],
+    "ci/cd":[
+        {q:"What does CI stand for in CI/CD?",opts:["Continuous Integration","Code Inspection","Cloud Infrastructure","Component Interface"],ans:0,exp:"CI = Continuous Integration — automatically integrating and testing code changes."},
+        {q:"What is the purpose of a CI/CD pipeline?",opts:["Manual deployment","Automate build, test, and deploy","Store backups","Monitor servers"],ans:1,exp:"CI/CD pipelines automate the software delivery process from code to production."},
+        {q:"Which tool is commonly used for CI/CD?",opts:["MS Word","Jenkins","MySQL","Photoshop"],ans:1,exp:"Jenkins is a widely-used open-source automation server for CI/CD pipelines."}
+    ],
+    "terraform":[
+        {q:"Terraform is used for?",opts:["Writing frontend code","Infrastructure as Code","Database queries","API testing"],ans:1,exp:"Terraform provisions and manages cloud infrastructure using declarative config files."},
+        {q:"What is a Terraform state file?",opts:["A log file","A record of what infrastructure Terraform manages","A config backup","An error report"],ans:1,exp:"The state file tracks existing infrastructure to detect changes on the next apply."},
+        {q:"Which command applies Terraform changes?",opts:["terraform run","terraform apply","terraform start","terraform deploy"],ans:1,exp:"'terraform apply' executes the planned infrastructure changes."}
+    ],
+    "flask":[
+        {q:"Flask is a?",opts:["Database","Frontend framework","Python web micro-framework","JavaScript library"],ans:2,exp:"Flask is a lightweight Python web framework designed for simplicity."},
+        {q:"How do you define a route in Flask?",opts:["@app.route()","def route()","route.add()","app.path()"],ans:0,exp:"The @app.route() decorator maps a URL to a Python function."},
+        {q:"What does `render_template()` do in Flask?",opts:["Sends email","Runs SQL","Renders an HTML template","Authenticates user"],ans:2,exp:"render_template() renders an HTML file from the templates folder."}
+    ],
+    "django":[
+        {q:"Django follows which architectural pattern?",opts:["MVC","MVP","MVT","MVVM"],ans:2,exp:"Django uses MVT (Model-View-Template) pattern."},
+        {q:"What is Django ORM?",opts:["A query language","Object-Relational Mapping to interact with DB via Python","A frontend tool","A caching system"],ans:1,exp:"Django ORM lets you query the database using Python objects instead of raw SQL."},
+        {q:"Command to create migrations in Django?",opts:["python manage.py migrate","python manage.py makemigrations","python manage.py syncdb","python manage.py create"],ans:1,exp:"'makemigrations' detects model changes; 'migrate' applies them to the database."}
+    ],
+    "rest api":[
+        {q:"Which HTTP method is used to retrieve data?",opts:["POST","PUT","GET","DELETE"],ans:2,exp:"GET is used to retrieve/read data from a REST API endpoint."},
+        {q:"What does a 404 status code mean?",opts:["Server error","Unauthorized","Resource not found","OK"],ans:2,exp:"404 means the requested resource could not be found on the server."},
+        {q:"What format do most REST APIs return data in?",opts:["XML only","HTML","JSON","Binary"],ans:2,exp:"Most modern REST APIs return data in JSON (JavaScript Object Notation) format."}
+    ],
+    "tensorflow":[
+        {q:"TensorFlow is primarily used for?",opts:["Web development","Machine learning and deep learning","Database management","Network security"],ans:1,exp:"TensorFlow is an open-source framework for building ML and deep learning models."},
+        {q:"What is a tensor in TensorFlow?",opts:["A Python list","A multi-dimensional array","A database table","A neural network"],ans:1,exp:"Tensors are multi-dimensional arrays — the fundamental data unit in TensorFlow."},
+        {q:"Which API is the high-level interface for TensorFlow?",opts:["PyTorch","Keras","Pandas","NumPy"],ans:1,exp:"Keras is the high-level API built into TensorFlow 2.x for building models easily."}
+    ],
+    "pytorch":[
+        {q:"PyTorch is mainly used for?",opts:["Web scraping","Deep learning research and production","CSS styling","SQL queries"],ans:1,exp:"PyTorch is a popular deep learning framework known for dynamic computation graphs."},
+        {q:"What is a tensor in PyTorch?",opts:["A Python dict","A multi-dimensional matrix","A database table","A function"],ans:1,exp:"PyTorch tensors are multi-dimensional arrays similar to NumPy arrays but GPU-accelerated."},
+        {q:"What is autograd in PyTorch?",opts:["Auto garbage collection","Automatic gradient computation","Auto graph rendering","Auto data loading"],ans:1,exp:"Autograd automatically computes gradients for backpropagation during training."}
+    ],
+    "scikit-learn":[
+        {q:"Scikit-learn is used for?",opts:["Deep learning","Classical machine learning algorithms","Web development","Database queries"],ans:1,exp:"Scikit-learn provides tools for classical ML: classification, regression, clustering, etc."},
+        {q:"What does train_test_split do?",opts:["Trains two models","Splits data into training and testing sets","Deletes training data","Merges datasets"],ans:1,exp:"train_test_split divides your dataset into training and testing subsets."},
+        {q:"Which metric is used to evaluate classification models?",opts:["RMSE","R-squared","Accuracy/F1 Score","Mean Absolute Error"],ans:2,exp:"Accuracy, F1 Score, and Precision/Recall are common classification metrics."}
+    ],
+    "pandas":[
+        {q:"What is a DataFrame in pandas?",opts:["A list","A 2D labeled data structure with rows and columns","A dictionary","A matrix"],ans:1,exp:"A DataFrame is a 2D table-like structure — the core data container in pandas."},
+        {q:"How do you read a CSV in pandas?",opts:["pandas.open()","pd.read_csv()","pd.load_csv()","pd.import_csv()"],ans:1,exp:"pd.read_csv('file.csv') reads a CSV file into a DataFrame."},
+        {q:"Which method gives summary statistics?",opts:["df.summary()","df.info()","df.describe()","df.stats()"],ans:2,exp:"df.describe() returns count, mean, std, min, max, and quartiles for numeric columns."}
+    ],
+    "numpy":[
+        {q:"NumPy is primarily used for?",opts:["Web scraping","Numerical computing with arrays","Database access","UI design"],ans:1,exp:"NumPy provides fast N-dimensional arrays and mathematical operations."},
+        {q:"How do you create a NumPy array?",opts:["numpy.create()","np.array()","np.list()","numpy.make()"],ans:1,exp:"np.array([1, 2, 3]) creates a NumPy array from a Python list."},
+        {q:"What does np.zeros((3,3)) return?",opts:["A 3x3 matrix of ones","A 3x3 matrix of zeros","A random 3x3 matrix","An empty list"],ans:1,exp:"np.zeros((3,3)) returns a 3x3 NumPy array filled with zeros."}
+    ],
+    "data visualization":[
+        {q:"Which Python library is commonly used for plotting?",opts:["NumPy","Pandas","Matplotlib","Scikit-learn"],ans:2,exp:"Matplotlib is the foundational Python library for creating static charts and graphs."},
+        {q:"What type of chart is best for showing distributions?",opts:["Pie chart","Line chart","Histogram","Scatter plot"],ans:2,exp:"Histograms show the frequency distribution of a dataset effectively."},
+        {q:"What makes a good data visualization?",opts:["As many colors as possible","Clear labels and minimal clutter","3D effects","Lots of text"],ans:1,exp:"Effective visualizations are clear, focused, and free of unnecessary visual noise."}
+    ],
+    "java":[
+        {q:"Java is known for which principle?",opts:["Write once, run anywhere","Fast compilation","No garbage collection","Dynamic typing"],ans:0,exp:"Java's JVM allows code to run on any platform without recompilation."},
+        {q:"Which keyword creates an object in Java?",opts:["create","make","new","build"],ans:2,exp:"The 'new' keyword instantiates a new object from a class."},
+        {q:"What is the purpose of 'public static void main'?",opts:["A database connection","The entry point of a Java program","A constructor","An interface"],ans:1,exp:"main() is the entry point that the JVM calls to start program execution."}
+    ],
+    "kotlin":[
+        {q:"Kotlin is primarily used for?",opts:["Data science","Android development","Game development","Networking"],ans:1,exp:"Kotlin is Google's preferred language for Android app development."},
+        {q:"How do you declare an immutable variable in Kotlin?",opts:["var","let","val","const"],ans:2,exp:"'val' declares an immutable (read-only) variable in Kotlin."},
+        {q:"Kotlin's null safety feature prevents?",opts:["Memory leaks","NullPointerExceptions","Infinite loops","Syntax errors"],ans:1,exp:"Kotlin's type system distinguishes nullable and non-nullable types to avoid NPEs."}
+    ],
+    "swift":[
+        {q:"Swift is developed by?",opts:["Google","Microsoft","Apple","Mozilla"],ans:2,exp:"Apple developed Swift as the modern language for iOS and macOS development."},
+        {q:"What is an Optional in Swift?",opts:["A variable that's always set","A variable that may or may not have a value","A loop type","A class modifier"],ans:1,exp:"Optionals represent values that might be absent — declared with ? (e.g., String?)."},
+        {q:"Which keyword unwraps an optional safely?",opts:["unwrap","force","if let","guard"],ans:2,exp:"'if let' safely unwraps an optional and executes code only if it has a value."}
+    ],
+    "flutter":[
+        {q:"Flutter uses which programming language?",opts:["JavaScript","Kotlin","Dart","Swift"],ans:2,exp:"Flutter apps are written in Dart, a language developed by Google."},
+        {q:"What is a Widget in Flutter?",opts:["A database","A network call","The basic building block of Flutter UI","A test case"],ans:2,exp:"Everything in Flutter is a Widget — text, buttons, layouts, and even the app itself."},
+        {q:"What is a StatefulWidget?",opts:["A widget that never changes","A widget that can rebuild when state changes","A database widget","A backend widget"],ans:1,exp:"StatefulWidget can hold mutable state that rebuilds the UI when it changes."}
+    ],
+    "react native":[
+        {q:"React Native is used for?",opts:["Web apps only","Native mobile apps using React","Database management","Backend APIs"],ans:1,exp:"React Native lets you build native iOS and Android apps using React and JavaScript."},
+        {q:"What replaces <div> in React Native?",opts:["<section>","<container>","<View>","<Block>"],ans:2,exp:"<View> is the React Native equivalent of a <div> — a layout container."},
+        {q:"How do you style components in React Native?",opts:["CSS files","Tailwind","StyleSheet.create()","SASS"],ans:2,exp:"React Native uses StyleSheet.create() with JavaScript objects for styling."}
+    ],
+    "network security":[
+        {q:"What is a firewall?",opts:["Antivirus software","A network security system that monitors traffic","A type of malware","A server type"],ans:1,exp:"A firewall monitors and controls incoming/outgoing network traffic based on rules."},
+        {q:"What does SSL/TLS do?",opts:["Speeds up networks","Encrypts data in transit","Filters spam","Manages passwords"],ans:1,exp:"SSL/TLS encrypts communication between clients and servers (e.g., HTTPS)."},
+        {q:"What is a DDoS attack?",opts:["Data theft","Flooding a server with traffic to deny service","Installing malware","Phishing emails"],ans:1,exp:"DDoS (Distributed Denial of Service) overwhelms a server with traffic to take it offline."}
+    ],
+    "ethical hacking":[
+        {q:"The first phase of ethical hacking is?",opts:["Exploitation","Reconnaissance","Reporting","Scanning"],ans:1,exp:"Reconnaissance (footprinting) is gathering information about the target system."},
+        {q:"What is a penetration test?",opts:["A stress test","An authorized simulated attack to find vulnerabilities","A network speed test","A database test"],ans:1,exp:"A pen test is an authorized simulated cyberattack to evaluate system security."},
+        {q:"What tool is commonly used for port scanning?",opts:["Photoshop","Nmap","Excel","Slack"],ans:1,exp:"Nmap is a popular open-source tool for network discovery and port scanning."}
+    ],
+    "penetration testing":[
+        {q:"What is the goal of penetration testing?",opts:["Destroy systems","Find vulnerabilities before attackers do","Speed up systems","Write documentation"],ans:1,exp:"Pen testing proactively identifies security weaknesses in a controlled environment."},
+        {q:"Which phase involves gaining access to the system?",opts:["Reconnaissance","Reporting","Exploitation","Scanning"],ans:2,exp:"The exploitation phase involves using discovered vulnerabilities to gain access."},
+        {q:"What is a CVE?",opts:["A type of malware","Common Vulnerabilities and Exposures — a public list of security flaws","A firewall rule","A network protocol"],ans:1,exp:"CVE is a standardized identifier for known cybersecurity vulnerabilities."}
+    ],
+    "agile methodology":[
+        {q:"How long is a typical Scrum sprint?",opts:["1 day","1-4 weeks","3 months","6 months"],ans:1,exp:"Scrum sprints typically last 1–4 weeks, with 2 weeks being most common."},
+        {q:"What is a user story in Agile?",opts:["A bug report","A short description of a feature from the user's perspective","A technical spec","A meeting agenda"],ans:1,exp:"User stories describe features in plain language from an end-user perspective."},
+        {q:"What is the purpose of a daily stand-up?",opts:["Write code","Review the project","Sync the team on progress, blockers, and plans","Plan the sprint"],ans:2,exp:"Daily stand-ups are short team check-ins to share updates and remove blockers."}
+    ],
+    "jira":[
+        {q:"What is Jira primarily used for?",opts:["Email management","Project and issue tracking","Database management","Code deployment"],ans:1,exp:"Jira is a project management tool for tracking issues, tasks, and sprints."},
+        {q:"What is an Epic in Jira?",opts:["A bug","A large body of work that can be broken into stories","A sprint","A user role"],ans:1,exp:"An Epic is a large feature or goal that contains multiple user stories."},
+        {q:"What does a 'Done' column on a Jira board mean?",opts:["Work is paused","Work is in progress","Work is complete and meets acceptance criteria","Work is blocked"],ans:2,exp:"'Done' means the task is complete, tested, and meets the definition of done."}
+    ],
+    "manual testing":[
+        {q:"What is a test case?",opts:["A bug report","A set of conditions and steps to verify a feature","Source code","A deployment script"],ans:1,exp:"A test case is a documented set of inputs, steps, and expected results to verify behavior."},
+        {q:"What is regression testing?",opts:["Testing new features","Re-testing after changes to ensure nothing is broken","Load testing","Unit testing"],ans:1,exp:"Regression testing verifies that recent changes haven't broken existing functionality."},
+        {q:"What is a bug life cycle?",opts:["How fast bugs appear","The stages a bug goes through from discovery to closure","A testing method","A deployment pipeline"],ans:1,exp:"The bug life cycle tracks a defect from New → Assigned → Fixed → Verified → Closed."}
+    ],
+    "selenium":[
+        {q:"What is Selenium used for?",opts:["Load testing","Web UI automation testing","API testing","Unit testing"],ans:1,exp:"Selenium automates web browser interactions for testing web applications."},
+        {q:"Which language is most commonly used with Selenium?",opts:["SQL","Python/Java (most common)","HTML","CSS"],ans:1,exp:"Selenium supports multiple languages; Python and Java are the most widely used."},
+        {q:"What is a WebDriver in Selenium?",opts:["A network driver","An interface that controls the browser","A test reporter","A database connector"],ans:1,exp:"WebDriver is Selenium's API for controlling a real browser programmatically."}
+    ],
+    "figma":[
+        {q:"Figma is primarily used for?",opts:["Backend development","UI/UX design and prototyping","Database management","Machine learning"],ans:1,exp:"Figma is a collaborative cloud-based tool for UI/UX design and prototyping."},
+        {q:"What is a component in Figma?",opts:["A page","A reusable design element","A font","A layer"],ans:1,exp:"Components are reusable design elements — like buttons or cards — that maintain consistency."},
+        {q:"What is prototyping in Figma?",opts:["Writing code","Creating clickable mockups to simulate user flows","Exporting assets","Writing CSS"],ans:1,exp:"Prototyping in Figma lets you link frames to simulate how an app would work."}
+    ],
+    "data structures":[
+        {q:"Which data structure uses LIFO?",opts:["Queue","Stack","Array","Linked List"],ans:1,exp:"A Stack uses Last In, First Out (LIFO) — like a stack of plates."},
+        {q:"What is the time complexity of binary search?",opts:["O(n)","O(n²)","O(log n)","O(1)"],ans:2,exp:"Binary search divides the search space in half each step: O(log n)."},
+        {q:"Which structure is best for fast key-value lookups?",opts:["Array","Linked List","Stack","Hash Map"],ans:3,exp:"Hash Maps provide O(1) average time for insertions and lookups."}
+    ],
+    "algorithms":[
+        {q:"What is Big O notation used for?",opts:["Measuring code style","Describing algorithm efficiency","Counting code lines","Measuring memory physically"],ans:1,exp:"Big O notation describes how an algorithm's time or space grows with input size."},
+        {q:"Which sorting algorithm has O(n log n) average case?",opts:["Bubble Sort","Insertion Sort","Merge Sort","Selection Sort"],ans:2,exp:"Merge Sort has O(n log n) time complexity in all cases."},
+        {q:"What is recursion?",opts:["A loop","A function that calls itself","A data structure","A sorting method"],ans:1,exp:"Recursion is when a function calls itself to solve a smaller sub-problem."}
+    ],
+    "system design":[
+        {q:"What is horizontal scaling?",opts:["Making one server bigger","Adding more servers","Removing servers","Adding RAM"],ans:1,exp:"Horizontal scaling adds more servers (scale out) to distribute the load."},
+        {q:"What is a load balancer?",opts:["A database","A tool that distributes traffic across multiple servers","A caching layer","A DNS server"],ans:1,exp:"A load balancer evenly distributes incoming requests across multiple servers."},
+        {q:"What is CAP theorem?",opts:["A security protocol","Consistency, Availability, and Partition tolerance tradeoffs","A caching strategy","A database pattern"],ans:1,exp:"CAP theorem states distributed systems can only guarantee 2 of 3: Consistency, Availability, Partition tolerance."}
+    ],
+    "solidity":[
+        {q:"Solidity is used to write?",opts:["Mobile apps","Smart contracts on Ethereum","Backend APIs","Database queries"],ans:1,exp:"Solidity is a statically-typed language for writing Ethereum smart contracts."},
+        {q:"What is a smart contract?",opts:["A legal document","Self-executing code stored on a blockchain","A database","A web API"],ans:1,exp:"Smart contracts are self-executing programs stored on a blockchain that run when conditions are met."},
+        {q:"What does 'payable' mean in Solidity?",opts:["The contract earns money","A function that can receive Ether","A free function","A test function"],ans:1,exp:"The payable modifier allows a function or address to receive Ether."}
+    ],
+    "c#":[
+        {q:"C# is primarily used for?",opts:["Data science","Web scraping","Microsoft/.NET applications and Unity games","Network security"],ans:2,exp:"C# is used for .NET applications, Windows software, and game development with Unity."},
+        {q:"What is a class in C#?",opts:["A function","A blueprint for creating objects","A database table","A loop"],ans:1,exp:"A class is a blueprint that defines the properties and methods of objects."},
+        {q:"What does 'using' do in C#?",opts:["Declares a variable","Imports a namespace","Creates a loop","Defines a class"],ans:1,exp:"'using' imports a namespace, allowing you to use its types without full qualification."}
+    ],
+    "c++":[
+        {q:"What is a pointer in C++?",opts:["A function","A variable that stores a memory address","An array","A class"],ans:1,exp:"A pointer stores the memory address of another variable."},
+        {q:"What does 'delete' do in C++?",opts:["Removes a variable name","Frees memory allocated with 'new'","Deletes a file","Removes a class"],ans:1,exp:"'delete' deallocates memory that was dynamically allocated with 'new' to prevent memory leaks."},
+        {q:"What is OOP?",opts:["Optimized Operational Programming","Object-Oriented Programming","Open Online Process","Output Operation Protocol"],ans:1,exp:"OOP is a paradigm based on objects containing data and behavior (classes, inheritance, etc.)."}
+    ],
+    "unity":[
+        {q:"Unity uses which language for scripting?",opts:["Python","Java","C#","Lua"],ans:2,exp:"Unity uses C# as its primary scripting language for game logic."},
+        {q:"What is a GameObject in Unity?",opts:["A 3D model file","The fundamental object in a Unity scene","A shader","A camera"],ans:1,exp:"Every object in a Unity scene is a GameObject — it's a container for components."},
+        {q:"What is the Update() method in Unity?",opts:["Runs once at startup","Runs every frame","Runs on collision","Runs at game end"],ans:1,exp:"Update() is called every frame and is used for game logic like movement and input."}
+    ],
+    "communication":[
+        {q:"Most effective way to confirm understanding?",opts:["Nodding","Interrupting","Paraphrasing","Staying silent"],ans:2,exp:"Paraphrasing shows active listening and prevents miscommunication."},
+        {q:"Active listening means?",opts:["Talking more","Fully concentrating on speaker","Preparing response while they talk","Multitasking"],ans:1,exp:"Active listening is fully concentrating on and responding to the speaker."},
+        {q:"Best tone for professional emails?",opts:["Casual","Aggressive","Clear and concise","Vague and long"],ans:2,exp:"Professional emails should be clear, polite, and concise."}
+    ],
+    "leadership":[
+        {q:"Key trait of a transformational leader?",opts:["Micromanages tasks","Inspires toward a vision","Focuses only on short-term","Avoids feedback"],ans:1,exp:"Transformational leaders inspire and motivate toward a shared vision."},
+        {q:"Servant leadership emphasizes?",opts:["Leader's personal gain","Putting team's needs first","Strict hierarchy","Avoiding responsibility"],ans:1,exp:"Servant leadership puts the growth and well-being of the team first."},
+        {q:"Emotional intelligence in leadership?",opts:["IQ","Technical knowledge","Managing emotions effectively","Speed of decisions"],ans:2,exp:"EQ involves recognizing, understanding, and managing emotions in self and others."}
+    ],
+    "problem solving":[
+        {q:"First step in solving a complex problem?",opts:["Jump to a solution","Understand and define the problem clearly","Ask others","Search the internet"],ans:1,exp:"Clearly defining the problem is the essential first step before attempting a solution."},
+        {q:"What is divide and conquer?",opts:["Ignoring the problem","Breaking a problem into smaller sub-problems","A sorting algorithm only","Asking your team"],ans:1,exp:"Divide and conquer breaks problems into smaller, manageable sub-problems."},
+        {q:"How do you verify your solution works?",opts:["Trust your gut","Celebrate immediately","Test with multiple cases including edge cases","Ask one person"],ans:2,exp:"Testing thoroughly, including edge cases, validates that a solution is correct."}
+    ],
+    "teamwork":[
+        {q:"What is the most important factor in effective teamwork?",opts:["Working alone","Open communication and trust","Having the most skills","Avoiding conflict at all costs"],ans:1,exp:"Open communication and trust are the foundation of high-performing teams."},
+        {q:"How should you handle disagreement in a team?",opts:["Stay silent","Address it constructively with focus on the issue","Win the argument","Ignore it"],ans:1,exp:"Constructive, respectful dialogue focused on the issue (not the person) resolves team disagreements."},
+        {q:"What does 'accountability' mean in a team?",opts:["Blaming others","Taking responsibility for your tasks and commitments","Reporting mistakes to management","Tracking others' work"],ans:1,exp:"Accountability means owning your responsibilities and following through on commitments."}
+    ],
+    "time management":[
+        {q:"What is the Eisenhower Matrix used for?",opts:["Project planning","Prioritizing tasks by urgency and importance","Time zone management","Calendar scheduling"],ans:1,exp:"The Eisenhower Matrix categorizes tasks by urgency and importance to prioritize effectively."},
+        {q:"What is time-blocking?",opts:["Blocking websites","Scheduling specific tasks to specific time slots","Working 24 hours","Saying no to all meetings"],ans:1,exp:"Time-blocking assigns specific time slots to tasks, reducing context-switching and improving focus."},
+        {q:"The Pomodoro technique involves?",opts:["25-min focused work + 5-min break cycles","Working 4 hours straight","Checking emails every 5 minutes","Planning your whole week at once"],ans:0,exp:"Pomodoro uses 25-minute focused intervals followed by 5-minute breaks to sustain productivity."}
+    ],
+    "critical thinking":[
+        {q:"Critical thinking involves?",opts:["Accepting all information at face value","Analyzing and evaluating information objectively","Only using emotions to decide","Following the majority opinion"],ans:1,exp:"Critical thinking means analyzing information objectively before drawing conclusions."},
+        {q:"What is a logical fallacy?",opts:["A mathematical formula","An error in reasoning that makes an argument invalid","A programming bug","A debate strategy"],ans:1,exp:"A logical fallacy is a flaw in reasoning that undermines the validity of an argument."},
+        {q:"The Socratic method helps with?",opts:["Memorization","Deep questioning to explore ideas and assumptions","Speed reading","Task management"],ans:1,exp:"The Socratic method uses systematic questioning to examine ideas and uncover assumptions."}
+    ],
+    "attention to detail":[
+        {q:"Why is attention to detail important in software?",opts:["Makes code look better","Prevents bugs and ensures correctness","Speeds up typing","Makes meetings shorter"],ans:1,exp:"Careful attention to detail prevents subtle bugs, security issues, and incorrect outputs."},
+        {q:"Best practice to catch errors before submission?",opts:["Submit immediately","Review and proofread your own work","Ask someone else to do it","Use spellcheck only"],ans:1,exp:"Self-review catches many errors before they reach others, saving time and maintaining quality."},
+        {q:"How does checklists help with attention to detail?",opts:["They don't help","They ensure no steps are missed in a process","They slow down work","They replace thinking"],ans:1,exp:"Checklists systematically ensure every required step is completed, reducing oversights."}
+    ],
+    "analytical thinking":[
+        {q:"Analytical thinking means?",opts:["Thinking quickly","Breaking down complex problems to understand components","Following instructions exactly","Memorizing facts"],ans:1,exp:"Analytical thinking involves breaking complex problems into parts to understand and solve them."},
+        {q:"What is root cause analysis?",opts:["A financial tool","Finding the underlying cause of a problem, not just symptoms","Listing all problems","Brainstorming solutions"],ans:1,exp:"Root cause analysis identifies the fundamental reason a problem occurred to prevent recurrence."},
+        {q:"Which tool helps visualize problem causes?",opts:["Kanban board","Fishbone (Ishikawa) diagram","Gantt chart","Pie chart"],ans:1,exp:"The fishbone diagram maps potential causes of a problem to their root sources."}
+    ]
+};
+
+const DEF_Q = [
+    {q:"Best way to learn a new technical skill?",opts:["Read once","Hands-on projects","Passive videos","Wait for certificate"],ans:1,exp:"Active practice through projects is the most effective learning method."},
+    {q:"How do you measure skill proficiency?",opts:["Years of experience","Ability to solve real problems","Tutorials watched","Having a degree"],ans:1,exp:"True proficiency means applying skills to solve actual problems."},
+    {q:"What helps most when stuck learning?",opts:["Give up","Break into smaller parts","Memorize more facts","Read same material again"],ans:1,exp:"Breaking problems into smaller parts is the most effective strategy."}
+];
+
+let aSkill='', aCardIdx=0, aQs=[], aIdx=0, aScore=0, aAnswered=false;
+
+function openAssessment(idx, skill) {
+    const chk = document.getElementById('chk-'+idx);
+    aSkill = skill; aCardIdx = idx; aIdx = 0; aScore = 0; aAnswered = false;
+    if (chk.classList.contains('done')) {
+        if (confirm('Unmark this skill as complete?')) {
+            chk.classList.remove('done');
+            chk.textContent = '';
+            document.getElementById('card-'+idx).style.opacity = '1';
+            completedSkills.delete(skill);
+            updateProgress();
+            saveProgress(true); // auto-save after unchecking
+        }
+        return;
+    }
+    aQs = QDB[skill.toLowerCase()] || DEF_Q;
+    document.getElementById('aTitle').textContent = `📝 ${skill.charAt(0).toUpperCase()+skill.slice(1)} – Quick Assessment`;
+    document.getElementById('aSub').textContent = `${aQs.length} questions to verify your understanding`;
+    document.getElementById('resultView').style.display = 'none';
+    document.getElementById('quizView').style.display = 'block';
+    renderQ();
+    document.getElementById('assessBg').classList.add('open');
+}
+
+function renderQ() {
+    const q = aQs[aIdx];
+    const tot = aQs.length;
+    document.getElementById('aQnum').textContent = `Q ${aIdx+1} of ${tot}`;
+    document.getElementById('aScoreDisp').textContent = `Score: ${aScore}`;
+    document.getElementById('aBar').style.width = `${(aIdx/tot)*100}%`;
+    document.getElementById('qText').textContent = `Q${aIdx+1}. ${q.q}`;
+    document.getElementById('qOpts').innerHTML = q.opts.map((o,i) => `
+        <div class="opt" id="op-${i}" onclick="pickOpt(${i})"><div class="opt-circle"></div>${o}</div>`).join('');
+    const fb = document.getElementById('aFb');
+    fb.className = 'a-fb'; fb.textContent = '';
+    const btn = document.getElementById('aNext');
+    btn.disabled = true;
+    btn.textContent = aIdx < tot-1 ? 'Next →' : 'See Result';
+    aAnswered = false;
+}
+
+function pickOpt(i) {
+    if (aAnswered) return;
+    aAnswered = true;
+    const q = aQs[aIdx];
+    document.querySelectorAll('.opt').forEach((el,k) => {
+        if (k===q.ans) el.classList.add('ok');
+        else if (k===i && k!==q.ans) el.classList.add('bad');
+    });
+    if (i===q.ans) aScore++;
+    const fb = document.getElementById('aFb');
+    fb.className = 'a-fb show ' + (i===q.ans?'pass':'fail');
+    fb.textContent = (i===q.ans?'✅ Correct! ':'❌ Wrong. ') + q.exp;
+    document.getElementById('aNext').disabled = false;
+}
+
+function nextQ() {
+    aIdx++;
+    if (aIdx < aQs.length) renderQ();
+    else showResult();
+}
+
+function showResult() {
+    const tot = aQs.length;
+    const pct = Math.round((aScore/tot)*100);
+    document.getElementById('quizView').style.display = 'none';
+    document.getElementById('resultView').style.display = 'block';
+    document.getElementById('aBar').style.width = '100%';
+    document.getElementById('rEmoji').textContent = pct>=67?'🎉':pct>=33?'📚':'🔄';
+    document.getElementById('rScore').textContent = `${aScore}/${tot}`;
+    let msg;
+    if (pct >= 67) msg = `Great work! You scored ${pct}% — your understanding looks solid. Go ahead and mark this skill complete!`;
+    else msg = `You scored ${pct}%. It's recommended to review the material more before marking complete, but you can still proceed!`;
+    document.getElementById('rMsg').textContent = msg;
+}
+
+function retryAssess() {
+    aIdx=0; aScore=0; aAnswered=false;
+    document.getElementById('resultView').style.display='none';
+    document.getElementById('quizView').style.display='block';
+    renderQ();
+}
+
+function skipAssess() {
+    if (confirm('Skip assessment and mark this skill complete anyway?')) markDone();
+}
+
+function markDone() {
+    const chk = document.getElementById('chk-'+aCardIdx);
+    chk.classList.add('done');
+    chk.textContent = '✓';
+    document.getElementById('card-'+aCardIdx).style.opacity = '0.7';
+    completedSkills.add(aSkill);
+    updateProgress();
+    saveProgress(true); // auto-save silently
+    // Show a brief confirmation if element exists
+    const m = document.getElementById('savedMsg');
+    if (m) {
+        m.textContent = '✅ Progress auto-saved!';
+        m.style.display = 'block';
+        setTimeout(()=>{ m.style.display='none'; m.textContent='✅ Progress saved!'; }, 2000);
+    }
+    document.getElementById('assessBg').classList.remove('open');
+}
+
+document.getElementById('assessBg').addEventListener('click', e => { if(e.target===e.currentTarget) document.getElementById('assessBg').classList.remove('open'); });
+
+// ── Progress ──
+const completedSkills = new Set();
+const totalSkills = {{ (matched_skills|length) + (missing_skills|length) + (soft_skills_matched|length) + (soft_skills_missing|length) }};
+const selectedJob = "{{ selected_job }}";
+const baseMatched = {{ matched_skills|length + soft_skills_matched|length }};
+
+function updateProgress() {
+    const completed = completedSkills.size;
+    const totalLearn = Math.max(0, {{ missing_skills|length + soft_skills_missing|length }} - completed);
+    const totalHave = Math.min(totalSkills, baseMatched + completed);
+    const pct = totalSkills > 0 ? Math.round((totalHave / totalSkills) * 100) : 0;
+
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressBar').textContent = pct > 10 ? pct + '%' : '';
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('adjustedPct').textContent = pct + '%';
+    document.getElementById('learnedCount').textContent = completed;
+    document.getElementById('skillsHave').textContent = totalHave;
+    document.getElementById('skillsLearn').textContent = totalLearn;
+}
+
+let saveTimer = null;
+
+function saveProgress(silent) {
+    if (!selectedJob) { console.warn('saveProgress: selectedJob is empty, skipping'); return; }
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        console.log('Saving progress for job:', selectedJob, 'skills:', Array.from(completedSkills));
+        fetch('/save_progress', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({job: selectedJob, completed: Array.from(completedSkills)})
+        })
+        .then(r => r.json())
+        .then(data => {
+            console.log('Save response:', data);
+            if (!silent) {
+                const m = document.getElementById('savedMsg');
+                if (m) { m.style.display='block'; setTimeout(()=>m.style.display='none', 3000); }
+            }
+        })
+        .catch(err => console.error('saveProgress error:', err));
+    }, 600);
+}
+
+// Map skill name → card index (built from Jinja at render time)
+const skillIndexMap = {
+    {% if learning_paths %}
+    {% for path in learning_paths %}
+    "{{ path.skill | lower | replace("'", "\\'") }}": {{ loop.index }},
+    {% endfor %}
+    {% endif %}
+};
+
+// On page load, restore previously saved progress from DB
+if (selectedJob) {
+    fetch('/load_progress?job=' + encodeURIComponent(selectedJob))
+    .then(r => r.json())
+    .then(data => {
+        if (data.completed && data.completed.length > 0) {
+            data.completed.forEach(skill => {
+                completedSkills.add(skill);
+                const idx = skillIndexMap[skill.toLowerCase()];
+                if (idx) {
+                    const chk  = document.getElementById('chk-'  + idx);
+                    const card = document.getElementById('card-' + idx);
+                    if (chk)  { chk.classList.add('done'); chk.textContent = '✓'; }
+                    if (card) { card.style.opacity = '0.7'; }
+                }
+            });
+            updateProgress();
+
+            // Show a subtle "progress restored" notice
+            const msg = document.getElementById('savedMsg');
+            if (msg) {
+                msg.textContent = '🔄 Previous progress restored!';
+                msg.style.display = 'block';
+                msg.style.background = '#e3f2fd';
+                msg.style.color = '#1565c0';
+                setTimeout(() => {
+                    msg.style.display = 'none';
+                    msg.textContent = '✅ Progress saved!';
+                    msg.style.background = '';
+                    msg.style.color = '';
+                }, 3000);
+            }
+        }
+    })
+    .catch(err => console.log('Could not load progress:', err));
+}
+</script>
+<script>
+function validateJobInput() {
+    const val = document.getElementById('job').value.trim();
+    const msg = document.getElementById('invalid-job-msg');
+    const jobInput = document.getElementById('job');
+
+    // Must have at least 3 chars, must contain letters, must not be purely numbers/symbols
+    const hasLetters = /[a-zA-Z]{2,}/.test(val);  // at least 2 consecutive letters
+    const tooShort = val.length < 3;
+    const purelyNumeric = /^[^a-zA-Z]+$/.test(val); // no letters at all
+
+    if (!val || tooShort || !hasLetters || purelyNumeric) {
+        msg.style.display = 'block';
+        jobInput.style.borderColor = '#e65100';
+        jobInput.focus();
+        return false;
+    }
+    msg.style.display = 'none';
+    jobInput.style.borderColor = '#AFA9EC';
+
+    // Validate skills field if filled in
+    const skillsVal = document.getElementById('skills-input').value.trim();
+    const skillsMsg = document.getElementById('invalid-skills-msg');
+    if (skillsVal) {
+        const parts = skillsVal.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const allInvalid = parts.every(s => !/[a-zA-Z]{2,}/.test(s));
+        if (allInvalid) {
+            skillsMsg.style.display = 'block';
+            document.getElementById('skills-input').style.borderColor = '#e65100';
+            document.getElementById('skills-input').focus();
+            return false;
+        }
+    }
+    skillsMsg.style.display = 'none';
+    if (document.getElementById('skills-input')) {
+        document.getElementById('skills-input').style.borderColor = '';
+    }
+    return true;
+}
+// Also validate on input change
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('job').addEventListener('input', function() {
+        document.getElementById('invalid-job-msg').style.display = 'none';
+        this.style.borderColor = '#AFA9EC';
+    });
+    const skillsEl = document.getElementById('skills-input');
+    if (skillsEl) {
+        skillsEl.addEventListener('input', function() {
+            document.getElementById('invalid-skills-msg').style.display = 'none';
+            this.style.borderColor = '';
+        });
+    }
+});
+</script>
+</body>
+</html>
