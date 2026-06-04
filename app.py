@@ -762,25 +762,24 @@ def seed_jobs():
         "it support specialist": {"technical": ["windows","linux","networking","active directory","troubleshooting","hardware knowledge","cloud basics","ticketing systems","cybersecurity basics"],"soft": ["communication","patience","problem solving","empathy","teamwork","time management","calm under pressure","customer service"]},
         "business analyst": {"technical": ["requirements gathering","uml diagrams","sql basics","excel","data analysis","process modeling","jira","wireframing","stakeholder interviews","reporting"],"soft": ["communication","analytical thinking","problem solving","negotiation","collaboration","critical thinking","documentation","presentation skills"]},
     }
-        cur = mysql.connection.cursor()
-        inserted = 0
-        for role_key, data in JOB_SKILLS.items():
-            try:
-                cur.execute("INSERT IGNORE INTO job_roles (role_key, display_name, is_ai_generated) VALUES (%s, %s, 0)", (role_key, role_key.title()))
-                if cur.rowcount == 0:
-                    continue
-                role_id = cur.lastrowid
-                inserted += 1
-                for i, skill in enumerate(data.get("technical", [])):
-                    cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'technical',%s)", (role_id, skill.lower().strip(), i))
-                for i, skill in enumerate(data.get("soft", [])):
-                    cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'soft',%s)", (role_id, skill.lower().strip(), i))
-                mysql.connection.commit()
-            except Exception as e:
-                return f"Error on {role_key}: {e}"
-        cur.close()
-        return f"✅ Seeded {inserted} job roles!"
-    
+    cur = mysql.connection.cursor()
+    inserted = 0
+    for role_key, data in JOB_SKILLS.items():
+        try:
+            cur.execute("INSERT IGNORE INTO job_roles (role_key, display_name, is_ai_generated) VALUES (%s, %s, 0)", (role_key, role_key.title()))
+            if cur.rowcount == 0:
+                continue
+            role_id = cur.lastrowid
+            inserted += 1
+            for i, skill in enumerate(data.get("technical", [])):
+                cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'technical',%s)", (role_id, skill.lower().strip(), i))
+            for i, skill in enumerate(data.get("soft", [])):
+                cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'soft',%s)", (role_id, skill.lower().strip(), i))
+            mysql.connection.commit()
+        except Exception as e:
+            return f"Error on {role_key}: {e}"
+    cur.close()
+    return f"✅ Seeded {inserted} job roles!"
     @app.route("/reset_all_progress", methods=["POST"])
     def reset_all_progress():
         if 'user_id' not in session:
