@@ -733,7 +733,7 @@ def job_explorer():
         if data:
             jobs[r["key"]] = {**data, "display": r["name"], "ai": r["ai"]}
     return render_template("job_explorer.html", jobs=jobs)
-    @app.route("/seed-jobs/<int:page>")
+@app.route("/seed-jobs/<int:page>")
 def seed_jobs(page=1):
     JOB_SKILLS_ALL = [
         ("data scientist", {"technical": ["python","machine learning","deep learning","sql","statistics","pandas","numpy","matplotlib","data visualization","scikit-learn"],"soft": ["critical thinking","communication","problem solving","collaboration","curiosity"]}),
@@ -785,50 +785,53 @@ def seed_jobs(page=1):
     next_page = page + 1
     return f"✅ Seeded {inserted} roles (batch {page}). <a href='/seed-jobs/{next_page}'>Click here for next batch →</a>"
 
-    @app.route("/reset_all_progress", methods=["POST"])
-    def reset_all_progress():
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        user_id = session['user_id']
-        try:
-            cur = mysql.connection.cursor()
-            cur.execute("DELETE FROM user_progress WHERE user_id=%s", (user_id,))
-            mysql.connection.commit()
-            cur.close()
-        except Exception as e:
-            print("reset_all error:", e)
-        return redirect(url_for('my_progress'))
-    
-    
-    @app.route("/clear_progress", methods=["POST"])
-    def clear_progress():
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        job     = request.form.get('job', '').strip()
-        user_id = session['user_id']
-        try:
-            cur = mysql.connection.cursor()
-            cur.execute("DELETE FROM user_progress WHERE user_id=%s AND job_role=%s", (user_id, job))
-            mysql.connection.commit()
-            cur.close()
-        except Exception as e:
-            print("clear_progress error:", e)
-        return redirect(url_for('my_progress'))
-    @app.route("/setup-db")
-    def setup_db():
+
+@app.route("/reset_all_progress", methods=["POST"])
+def reset_all_progress():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    try:
         cur = mysql.connection.cursor()
-        cur.execute("""CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            full_name VARCHAR(100) NOT NULL,
-            email VARCHAR(150) UNIQUE NOT NULL,
-            username VARCHAR(80) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            role ENUM('student','professional','job_seeker') DEFAULT 'student',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS job_roles (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            role_key VARCHAR(120) UNIQUE NOT NULL,
-            display_name VARCHAR(150) NOT NULL,
+        cur.execute("DELETE FROM user_progress WHERE user_id=%s", (user_id,))
+        mysql.connection.commit()
+        cur.close()
+    except Exception as e:
+        print("reset_all error:", e)
+    return redirect(url_for('my_progress'))
+
+
+@app.route("/clear_progress", methods=["POST"])
+def clear_progress():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    job = request.form.get('job', '').strip()
+    user_id = session['user_id']
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM user_progress WHERE user_id=%s AND job_role=%s", (user_id, job))
+        mysql.connection.commit()
+        cur.close()
+    except Exception as e:
+        print("clear_progress error:", e)
+    return redirect(url_for('my_progress'))
+
+
+@app.route("/setup-db")
+def setup_db():
+    cur = mysql.connection.cursor()
+    cur.execute("""CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(100) NOT NULL,
+        email VARCHAR(150) UNIQUE NOT NULL,
+        username VARCHAR(80) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role ENUM('student','professional','job_seeker') DEFAULT 'student',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS job_roles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        role_key VARCHAR(120) UNIQUE NOT NULL,
+        display_name VARCHAR(150) NOT NULL,
         is_ai_generated TINYINT(1) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
     cur.execute("""CREATE TABLE IF NOT EXISTS job_role_skills (
@@ -850,7 +853,6 @@ def seed_jobs(page=1):
     cur.close()
     return "✅ Tables created successfully!"
 
-    
 
 if __name__ == "__main__":
     print("GROQ KEY LOADED:", os.environ.get("GROQ_API_KEY", "NOT FOUND"))
