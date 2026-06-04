@@ -733,58 +733,6 @@ def job_explorer():
         if data:
             jobs[r["key"]] = {**data, "display": r["name"], "ai": r["ai"]}
     return render_template("job_explorer.html", jobs=jobs)
-@app.route("/seed-jobs/<int:page>")
-def seed_jobs(page=1):
-    JOB_SKILLS_ALL = [
-        ("data scientist", {"technical": ["python","machine learning","deep learning","sql","statistics","pandas","numpy","matplotlib","data visualization","scikit-learn"],"soft": ["critical thinking","communication","problem solving","collaboration","curiosity"]}),
-        ("web developer", {"technical": ["html","css","javascript","react","flask","mysql","bootstrap","api integration","git","nodejs"],"soft": ["creativity","time management","communication","teamwork","adaptability"]}),
-        ("software engineer", {"technical": ["python","c++","java","data structures","algorithms","oop","git","system design","unit testing","rest api"],"soft": ["problem solving","teamwork","communication","critical thinking","time management"]}),
-        ("ai engineer", {"technical": ["python","machine learning","deep learning","tensorflow","pytorch","nlp","computer vision","model deployment","mlops"],"soft": ["research mindset","curiosity","problem solving","communication","collaboration"]}),
-        ("cloud engineer", {"technical": ["aws","azure","gcp","docker","kubernetes","linux","networking","security","terraform","ci/cd"],"soft": ["problem solving","communication","adaptability","attention to detail","teamwork"]}),
-        ("mobile developer", {"technical": ["java","kotlin","swift","flutter","react native","api integration","firebase","debugging","git"],"soft": ["creativity","attention to detail","problem solving","communication","adaptability"]}),
-        ("cybersecurity analyst", {"technical": ["network security","ethical hacking","firewalls","linux","incident response","penetration testing","cryptography"],"soft": ["analytical thinking","attention to detail","problem solving","communication","ethics"]}),
-        ("devops engineer", {"technical": ["ci/cd","docker","kubernetes","aws","monitoring","linux","automation","ansible","jenkins","git"],"soft": ["collaboration","problem solving","communication","adaptability","attention to detail"]}),
-        ("backend developer", {"technical": ["python","flask","sql","git","rest api","django","postgresql","docker"],"soft": ["problem solving","communication","teamwork","attention to detail","time management"]}),
-        ("frontend developer", {"technical": ["html","css","javascript","react","typescript","figma","git","unit testing"],"soft": ["creativity","attention to detail","communication","user empathy","collaboration"]}),
-        ("full stack developer", {"technical": ["html","css","javascript","react","nodejs","python","sql","rest api","docker","git"],"soft": ["problem solving","communication","teamwork","time management","adaptability"]}),
-        ("data analyst", {"technical": ["sql","excel","python","tableau","power bi","statistics","data cleaning","pandas","data visualization"],"soft": ["analytical thinking","attention to detail","communication","curiosity","problem solving"]}),
-        ("data engineer", {"technical": ["python","sql","spark","etl pipelines","kafka","airflow","docker","data modeling"],"soft": ["problem solving","attention to detail","teamwork","communication","documentation"]}),
-        ("machine learning engineer", {"technical": ["python","machine learning","deep learning","tensorflow","pytorch","scikit-learn","mlops","model deployment"],"soft": ["research mindset","problem solving","communication","collaboration","curiosity"]}),
-        ("product manager", {"technical": ["product roadmapping","agile","user research","wireframing","data analysis","jira","a/b testing"],"soft": ["leadership","communication","empathy","decision making","strategic thinking"]}),
-        ("ui/ux designer", {"technical": ["figma","adobe xd","user research","wireframing","prototyping","usability testing","design systems"],"soft": ["empathy","creativity","communication","attention to detail","collaboration"]}),
-        ("blockchain developer", {"technical": ["solidity","ethereum","smart contracts","web3.js","cryptography","javascript","python"],"soft": ["innovation mindset","problem solving","continuous learning","attention to detail"]}),
-        ("game developer", {"technical": ["c#","unity","unreal engine","c++","game design","debugging","performance optimization"],"soft": ["creativity","attention to detail","problem solving","teamwork","passion"]}),
-        ("data administrator", {"technical": ["sql","mysql","postgresql","oracle","database design","performance tuning","backup and recovery","indexing"],"soft": ["attention to detail","problem solving","communication","analytical thinking"]}),
-        ("quality assurance engineer", {"technical": ["manual testing","automation testing","selenium","pytest","api testing","bug tracking","postman"],"soft": ["attention to detail","analytical thinking","communication","perseverance","collaboration"]}),
-        ("business analyst", {"technical": ["requirements gathering","sql basics","excel","data analysis","process modeling","jira","wireframing"],"soft": ["communication","analytical thinking","problem solving","negotiation","collaboration"]}),
-    ]
-    per_page = 5
-    start = (page - 1) * per_page
-    end = start + per_page
-    batch = JOB_SKILLS_ALL[start:end]
-    if not batch:
-        return "✅ All jobs seeded!"
-    cur = mysql.connection.cursor()
-    inserted = 0
-    for role_key, data in batch:
-        try:
-            cur.execute("INSERT IGNORE INTO job_roles (role_key, display_name, is_ai_generated) VALUES (%s, %s, 0)", (role_key, role_key.title()))
-            if cur.rowcount == 0:
-                continue
-            role_id = cur.lastrowid
-            inserted += 1
-            for i, skill in enumerate(data.get("technical", [])):
-                cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'technical',%s)", (role_id, skill.lower().strip(), i))
-            for i, skill in enumerate(data.get("soft", [])):
-                cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'soft',%s)", (role_id, skill.lower().strip(), i))
-            mysql.connection.commit()
-        except Exception as e:
-            cur.close()
-            return f"Error on {role_key}: {e}"
-    cur.close()
-    next_page = page + 1
-    return f"✅ Seeded {inserted} roles (batch {page}). <a href='/seed-jobs/{next_page}'>Click here for next batch →</a>"
-
 
 @app.route("/reset_all_progress", methods=["POST"])
 def reset_all_progress():
@@ -799,7 +747,29 @@ def reset_all_progress():
     except Exception as e:
         print("reset_all error:", e)
     return redirect(url_for('my_progress'))
-
+@app.route("/seed-jobs/<int:page>")
+def seed_jobs(page=1):
+    jobs=[("data scientist",["python","machine learning","sql","statistics","pandas"],["critical thinking","communication","problem solving"]),("web developer",["html","css","javascript","react","nodejs"],["creativity","communication","teamwork"]),("software engineer",["python","java","data structures","algorithms","git"],["problem solving","teamwork","communication"]),("ai engineer",["python","tensorflow","pytorch","nlp","mlops"],["curiosity","problem solving","communication"]),("cloud engineer",["aws","docker","kubernetes","linux","terraform"],["problem solving","communication","adaptability"]),("mobile developer",["java","kotlin","flutter","react native","firebase"],["creativity","problem solving","communication"]),("cybersecurity analyst",["network security","ethical hacking","linux","penetration testing","cryptography"],["analytical thinking","attention to detail","problem solving"]),("devops engineer",["ci/cd","docker","kubernetes","aws","linux"],["collaboration","problem solving","communication"]),("backend developer",["python","flask","sql","rest api","docker"],["problem solving","communication","teamwork"]),("frontend developer",["html","css","javascript","react","figma"],["creativity","attention to detail","communication"]),("full stack developer",["html","javascript","react","python","sql"],["problem solving","communication","teamwork"]),("data analyst",["sql","excel","python","tableau","power bi"],["analytical thinking","attention to detail","communication"]),("data engineer",["python","sql","spark","etl pipelines","airflow"],["problem solving","attention to detail","teamwork"]),("machine learning engineer",["python","machine learning","tensorflow","pytorch","mlops"],["research mindset","problem solving","communication"]),("product manager",["agile","user research","jira","data analysis","wireframing"],["leadership","communication","empathy"]),("ui/ux designer",["figma","adobe xd","user research","prototyping","wireframing"],["empathy","creativity","communication"]),("blockchain developer",["solidity","ethereum","smart contracts","web3.js","cryptography"],["innovation mindset","problem solving","continuous learning"]),("game developer",["c#","unity","c++","game design","debugging"],["creativity","attention to detail","problem solving"]),("database administrator",["sql","mysql","postgresql","database design","performance tuning"],["attention to detail","problem solving","communication"]),("quality assurance engineer",["manual testing","selenium","pytest","api testing","bug tracking"],["attention to detail","analytical thinking","communication"]),("business analyst",["sql basics","excel","data analysis","jira","requirements gathering"],["communication","analytical thinking","problem solving"])]
+    per_page=3
+    start=(page-1)*per_page
+    batch=jobs[start:start+per_page]
+    if not batch:
+        return "All jobs seeded!"
+    cur=mysql.connection.cursor()
+    inserted=0
+    for role_key,tech,soft in batch:
+        cur.execute("INSERT IGNORE INTO job_roles (role_key, display_name, is_ai_generated) VALUES (%s, %s, 0)",(role_key,role_key.title()))
+        if cur.rowcount==0:
+            continue
+        role_id=cur.lastrowid
+        inserted+=1
+        for i,s in enumerate(tech):
+            cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'technical',%s)",(role_id,s,i))
+        for i,s in enumerate(soft):
+            cur.execute("INSERT INTO job_role_skills (job_role_id, skill_name, skill_type, skill_order) VALUES (%s,%s,'soft',%s)",(role_id,s,i))
+        mysql.connection.commit()
+    cur.close()
+    return f"Seeded {inserted} roles. <a href='/seed-jobs/{page+1}'>Next</a>"
 
 @app.route("/clear_progress", methods=["POST"])
 def clear_progress():
